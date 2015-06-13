@@ -751,7 +751,7 @@ int v_vfprintf(v_FILE *fp, const char *format, va_list arg)
     {
         HRSRC       hRsrc;
         HGLOBAL     hGlobal;
-        void *      data;
+        LPVOID      data;
         DWORD       size;
         v_FILE *    fp;
 
@@ -782,7 +782,7 @@ int v_vfprintf(v_FILE *fp, const char *format, va_list arg)
     {
         HRSRC       hRsrc;
         HGLOBAL     hGlobal;
-        void *      data;
+        LPVOID      data;
         DWORD       size;
         v_FILE *    fp;
 
