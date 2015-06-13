@@ -188,10 +188,18 @@ int v_vfscanf(v_FILE *fp, const char *format, va_list arg);
 /**************************************************************************/
 /* Windows .exe resource */
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(WIN16)
     #ifndef _INC_WINDOWS
         #include <windows.h>
     #endif
+#endif
+
+#ifdef WIN16
+    /* opening old 16-bit Windows .exe resource as virtual file */
+    v_FILE *v_fopen_res16(HMODULE hMod, LPCSTR res_id, LPCSTR type);
+#endif
+
+#ifdef _WIN32
     /* opening Windows .exe resource as virtual file */
     v_FILE *v_fopen_res(HMODULE hMod, LPCTSTR res_id, LPCTSTR type);
 #endif

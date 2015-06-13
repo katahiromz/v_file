@@ -745,6 +745,37 @@ int v_vfprintf(v_FILE *fp, const char *format, va_list arg)
 /**************************************************************************/
 /* Windows .exe resource */
 
+#ifdef WIN16
+    /* opening 16-bit Windows .exe resource as virtual file */
+    v_FILE *v_fopen_res16(HMODULE hMod, LPCSTR res_id, LPCSTR type)
+    {
+        HRSRC       hRsrc;
+        HGLOBAL     hGlobal;
+        void *      data;
+        DWORD       size;
+        v_FILE *    fp;
+
+        if (hMod == NULL)
+            hMod = GetModuleHandle(NULL);
+
+        hRsrc = FindResource(hMod, res_id, type);
+        if (hRsrc == NULL)
+            return NULL;
+
+        hGlobal = LoadResource(hMod, hRsrc);
+        if (hGlobal == NULL)
+            return NULL;
+
+        data = LockResource(hGlobal);
+        size = SizeofResource(hMod, hRsrc);
+        fp = v_fopen_rb(data, size);
+
+        UnlockResource(hGlobal);
+        FreeResource(hGlobal);
+        return fp;
+    }
+#endif
+
 #ifdef _WIN32
     /* opening Windows .exe resource as virtual file */
     v_FILE *v_fopen_res(HMODULE hMod, LPCTSTR res_id, LPCTSTR type)
