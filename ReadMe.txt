@@ -43,6 +43,8 @@ Just add "v_" at the beginning of each name. It's simple.
 The v_fopen_* functions store the specified data into 
 the v_FILE structure, if any; and set the file position.
 
+See source.
+
 /////////////////////////////////////////////////////
 // Katayama Hirofumi MZ (katahiromz) [ARMYANT]
 // Homepage     http://katahiromz.web.fc2.com/eindex.html
