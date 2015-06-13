@@ -3,8 +3,8 @@
 /* Copyright (C) 2015 Katayama Hirofumi MZ.  All Rights Reserved.         */
 /**************************************************************************/
 
-#ifndef V_FILE_H_
-#define V_FILE_H_  /* version */ 1 
+#ifndef KATAHIROMZ_V_FILE_H_
+#define KATAHIROMZ_V_FILE_H_  /* version */ 1 
 
 #ifdef __cplusplus
     #include <cstdarg>
@@ -258,4 +258,4 @@ int v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list arg);
 } /* extern "C" */
 #endif  /* __cplusplus */
 
-#endif  /* ndef V_FILE_H_ */
+#endif  /* ndef KATAHIROMZ_V_FILE_H_ */
