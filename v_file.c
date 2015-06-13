@@ -774,7 +774,7 @@ int v_vfprintf(v_FILE *fp, const char *format, va_list arg)
         FreeResource(hGlobal);
         return fp;
     }
-#endif
+#endif  /* WIN16 */
 
 #ifdef _WIN32
     /* opening Windows .exe resource as virtual file */
@@ -802,7 +802,7 @@ int v_vfprintf(v_FILE *fp, const char *format, va_list arg)
         fp = v_fopen_rb(data, size);
         return fp;
     }
-#endif
+#endif  /* _WIN32 */
 
 /**************************************************************************/
 /* C/C++ switching */

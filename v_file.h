@@ -223,7 +223,7 @@ int v_vfscanf(v_FILE *fp, const char *format, va_list arg);
         v_fopen_internal((data), 0, (siz), v_FMODE_READWRITE | v_FMODE_BINARY)
     #define v_fopen_apb(data, siz) \
         v_fopen_internal((data), (siz), (siz), v_FMODE_APPEND | v_FMODE_BINARY)
-#endif
+#endif  /* def V_FILE_SPEED */
 
 /**************************************************************************/
 
