@@ -117,7 +117,7 @@ typedef struct v_FILE
 /* opening / closing */
 
 v_LPFILE 
-v_fopen_internal(v_LPCVOID data, v_fpos_t index, v_fpos_t siz, int modes);
+v_fopen_intern(v_LPCVOID data, v_fpos_t index, v_fpos_t siz, int modes);
 
 /*
  * text mode
@@ -235,21 +235,21 @@ int v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list arg);
 
 #ifdef V_FILE_SPEED
     #define v_fopen_r(data, siz) \
-        v_fopen_internal((data), 0, (siz), v_FMODE_READ | v_FMODE_TEXT)
+        v_fopen_intern((data), 0, (siz), v_FMODE_READ | v_FMODE_TEXT)
     #define v_fopen_a(data, siz) \
-        v_fopen_internal((data), (siz), (siz), v_FMODE_APPEND | v_FMODE_TEXT)
+        v_fopen_intern((data), (siz), (siz), v_FMODE_APPEND | v_FMODE_TEXT)
     #define v_fopen_rb(data, siz) \
-        v_fopen_internal((data), 0, (siz), v_FMODE_READ | v_FMODE_BINARY)
+        v_fopen_intern((data), 0, (siz), v_FMODE_READ | v_FMODE_BINARY)
     #define v_fopen_ab(data, siz) \
-        v_fopen_internal((data), (siz), (siz), v_FMODE_APPEND | v_FMODE_BINARY)
+        v_fopen_intern((data), (siz), (siz), v_FMODE_APPEND | v_FMODE_BINARY)
     #define v_fopen_rp(data, siz) \
-        v_fopen_internal((data), 0, (siz), v_FMODE_READWRITE | v_FMODE_TEXT)
+        v_fopen_intern((data), 0, (siz), v_FMODE_READWRITE | v_FMODE_TEXT)
     #define v_fopen_ap(data, siz) \
-        v_fopen_internal((data), (siz), (siz), v_FMODE_APPEND | v_FMODE_TEXT)
+        v_fopen_intern((data), (siz), (siz), v_FMODE_APPEND | v_FMODE_TEXT)
     #define v_fopen_rpb(data, siz) \
-        v_fopen_internal((data), 0, (siz), v_FMODE_READWRITE | v_FMODE_BINARY)
+        v_fopen_intern((data), 0, (siz), v_FMODE_READWRITE | v_FMODE_BINARY)
     #define v_fopen_apb(data, siz) \
-        v_fopen_internal((data), (siz), (siz), v_FMODE_APPEND | v_FMODE_BINARY)
+        v_fopen_intern((data), (siz), (siz), v_FMODE_APPEND | v_FMODE_BINARY)
 #endif  /* def V_FILE_SPEED */
 
 /**************************************************************************/

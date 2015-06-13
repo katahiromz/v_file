@@ -34,7 +34,7 @@ extern "C"
 /* opening / closing */
 
 v_LPFILE 
-v_fopen_internal(v_LPCVOID data, v_fpos_t index, v_fpos_t siz, int modes)
+v_fopen_intern(v_LPCVOID data, v_fpos_t index, v_fpos_t siz, int modes)
 {
     v_LPFILE fp;
 
@@ -74,42 +74,42 @@ v_fopen_internal(v_LPCVOID data, v_fpos_t index, v_fpos_t siz, int modes)
 #ifndef V_FILE_SPEED
     v_LPFILE v_fopen_r(v_LPCVOID data, v_fpos_t siz)
     {
-        return v_fopen_internal(data, 0, siz, v_FMODE_READ | v_FMODE_TEXT);
+        return v_fopen_intern(data, 0, siz, v_FMODE_READ | v_FMODE_TEXT);
     }
 
     v_LPFILE v_fopen_a(v_LPCVOID data, v_fpos_t siz)
     {
-        return v_fopen_internal(data, siz, siz, v_FMODE_APPEND | v_FMODE_TEXT);
+        return v_fopen_intern(data, siz, siz, v_FMODE_APPEND | v_FMODE_TEXT);
     }
 
     v_LPFILE v_fopen_rb(v_LPCVOID data, v_fpos_t siz)
     {
-        return v_fopen_internal(data, 0, siz, v_FMODE_READ | v_FMODE_BINARY);
+        return v_fopen_intern(data, 0, siz, v_FMODE_READ | v_FMODE_BINARY);
     }
 
     v_LPFILE v_fopen_ab(v_LPCVOID data, v_fpos_t siz)
     {
-        return v_fopen_internal(data, siz, siz, v_FMODE_APPEND | v_FMODE_BINARY);
+        return v_fopen_intern(data, siz, siz, v_FMODE_APPEND | v_FMODE_BINARY);
     }
 
     v_LPFILE v_fopen_rp(v_LPCVOID data, v_fpos_t siz)
     {
-        return v_fopen_internal(data, 0, siz, v_FMODE_READWRITE | v_FMODE_TEXT);
+        return v_fopen_intern(data, 0, siz, v_FMODE_READWRITE | v_FMODE_TEXT);
     }
 
     v_LPFILE v_fopen_ap(v_LPCVOID data, v_fpos_t siz)
     {
-        return v_fopen_internal(data, siz, siz, v_FMODE_APPEND | v_FMODE_TEXT);
+        return v_fopen_intern(data, siz, siz, v_FMODE_APPEND | v_FMODE_TEXT);
     }
 
     v_LPFILE v_fopen_rpb(v_LPCVOID data, v_fpos_t siz)
     {
-        return v_fopen_internal(data, 0, siz, v_FMODE_READWRITE | v_FMODE_BINARY);
+        return v_fopen_intern(data, 0, siz, v_FMODE_READWRITE | v_FMODE_BINARY);
     }
 
     v_LPFILE v_fopen_apb(v_LPCVOID data, v_fpos_t siz)
     {
-        return v_fopen_internal(data, siz, siz, v_FMODE_APPEND | v_FMODE_BINARY);
+        return v_fopen_intern(data, siz, siz, v_FMODE_APPEND | v_FMODE_BINARY);
     }
 #endif  /* ndef V_FILE_SPEED */
 
@@ -270,23 +270,25 @@ int v_fgetc(v_LPFILE fp)
     if (fp->size < fp->index + sizeof(char))
         return v_EOF;
 
+#if (v_FMODE_TEXT == 0)
     if (fp->modes & v_FMODE_BINARY)
+#endif
     {
         /* binary mode */
         ch = *(fp->data + fp->index);
         fp->index += sizeof(char);
-    }
-    else
-    {
-        /* text mode: eat every '\r' */
-        do
-        {
-            ch = *(fp->data + fp->index);
-            fp->index += sizeof(char);
-        } while (ch == '\r' && fp->index + sizeof(char) <= fp->size);
+        return ch;
     }
 
+#if (v_FMODE_TEXT == 0)
+    /* text mode: eat every '\r' */
+    do
+    {
+        ch = *(fp->data + fp->index);
+        fp->index += sizeof(char);
+    } while (ch == '\r' && fp->index + sizeof(char) <= fp->size);
     return ch;
+#endif
 }
 
 int v_fputc(char c, v_LPFILE fp)
@@ -298,7 +300,7 @@ int v_fputc(char c, v_LPFILE fp)
         return v_EOF;
 #endif
 
-#if defined(MSDOS) || defined(WIN16) || defined(_WIN32)
+#if (v_FMODE_TEXT == 0)
     if ((fp->modes & v_FMODE_BINARY) == 0)
     {
         /* text mode */
@@ -310,7 +312,10 @@ int v_fputc(char c, v_LPFILE fp)
         }
     }
 #endif
-    return (v_fwrite_raw(&c, sizeof(char), 1, fp) ? c : v_EOF);
+    if (v_fwrite_raw(&c, sizeof(char), 1, fp))
+        return c;
+    else
+        return v_EOF;
 }
 
 /**************************************************************************/
@@ -335,12 +340,15 @@ int v_fread(v_LPVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp)
         return 0;
 #endif
 
+#if (v_FMODE_TEXT == 0)
     if (fp->modes & v_FMODE_BINARY)
+#endif
     {
         /* binary mode */
         return v_fread_raw(ptr, siz, nelem, fp);
     }
 
+#if (v_FMODE_TEXT == 0)
     /* text mode */
     pch = (v_LPCHAR)ptr;
     for (count = 0; count < nelem; ++count)
@@ -355,6 +363,7 @@ int v_fread(v_LPVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp)
     }
 hell:
     return count;
+#endif  /* (v_FMODE_TEXT == 0) */
 }
 
 int v_fwrite(v_LPCVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp)
@@ -376,13 +385,15 @@ int v_fwrite(v_LPCVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp)
         return 0;
 #endif
 
+#if (v_FMODE_TEXT == 0)
     if (fp->modes & v_FMODE_BINARY)
+#endif
     {
         /* binary mode */
         return v_fwrite_raw(ptr, siz, nelem, fp);
     }
 
-#if defined(MSDOS) || defined(WIN16) || defined(_WIN32)
+#if (v_FMODE_TEXT == 0)
     /* text mode */
     pch = (v_LPCSTR)ptr;
     for (count = 0; count < nelem; ++count)
@@ -396,9 +407,7 @@ int v_fwrite(v_LPCVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp)
     }
 hell:
     return count;
-#else
-    return v_fwrite_raw(ptr, siz, nelem, fp);
-#endif
+#endif  /* (v_FMODE_TEXT == 0) */
 }
 
 /**************************************************************************/
@@ -437,46 +446,72 @@ void v_clearerr(v_LPFILE fp)
 
 long v_ftell(v_LPFILE fp)
 {
+#ifndef V_FILE_SPEED
     assert(fp);
-    return (fp ? (long)(fp->index) : 0);
+    if (fp)
+    {
+        return (long)(fp->index);
+    }
+    return 0;
+#else
+    return (long)(fp->index);
+#endif
 }
 
 int v_fgetpos(v_LPFILE fp, v_fpos_t *pos)
 {
+#ifndef V_FILE_SPEED
     assert(fp);
+    assert(pos);
     if (fp && pos)
     {
         *pos = fp->index;
         return 0;
     }
     return v_EOF;
+#else
+    *pos = fp->index;
+    return 0;
+#endif
 }
 
 int v_fsetpos(v_LPFILE fp, const v_fpos_t *pos)
 {
+#ifndef V_FILE_SPEED
     assert(fp);
+    assert(pos);
     if (fp && pos)
     {
         fp->index = *pos;
         return 0;
     }
     return v_EOF;
+#else
+    fp->index = *pos;
+    return 0;
+#endif
 }
 
 void v_rewind(v_LPFILE fp)
 {
+#ifndef V_FILE_SPEED
     assert(fp);
     if (fp)
     {
         fp->index = 0;
     }
+#else
+    fp->index = 0;
+#endif
 }
 
 int v_fseek(v_LPFILE fp, long offset, int type)
 {
+#ifndef V_FILE_SPEED
     assert(fp);
     if (fp == NULL)
         return v_EOF;
+#endif
 
     switch (type)
     {
@@ -526,16 +561,20 @@ int v_fseek(v_LPFILE fp, long offset, int type)
 
 int v_ungetc(char c, v_LPFILE fp)
 {
-    if (fp == NULL || fp->index < sizeof(char))
-        return v_EOF;
-
 #ifndef V_FILE_SPEED
+    assert(fp);
+    if (fp == NULL)
+        return v_EOF;
     if (v_ferror(fp))
         return v_EOF;
     if ((fp->modes & v_FMODE_READ) == 0)
         return v_EOF;
 #endif
 
+    if (fp->index < sizeof(char))
+        return v_EOF;
+
+#if (v_FMODE_TEXT == 0)
     if ((fp->modes & v_FMODE_BINARY) == 0)
     {
         /* text mode */
@@ -545,6 +584,7 @@ int v_ungetc(char c, v_LPFILE fp)
             return c;
         }
     }
+#endif
 
     /* undo */
     fp->index -= sizeof(char);
@@ -582,10 +622,12 @@ v_LPSTR v_fgets(v_LPSTR s, int n, v_LPFILE fp)
         /* store a character */
         s[i] = ch;
 
+#if (v_FMODE_TEXT == 0)
         if ((fp->modes & v_FMODE_BINARY) == 0) 
         {
             assert(s[i] != '\r');
         }
+#endif
 
         if (s[i] == v_EOF)
         {
@@ -621,12 +663,18 @@ int v_fputs(v_LPCSTR s, v_LPFILE fp)
     if (len == 0)
         return v_EOF;
 
+#if (v_FMODE_TEXT == 0)
     if (fp->modes & v_FMODE_BINARY)
+#endif
     {
         /* binary mode */
-        return (v_fwrite_raw(s, len * sizeof(char), 1, fp) ? 0 : v_EOF);
+        if (v_fwrite_raw(s, len * sizeof(char), 1, fp))
+            return 0;
+        else
+            return v_EOF;
     }
 
+#if (v_FMODE_TEXT == 0)
     /* text mode */
     while (len--)
     {
@@ -639,6 +687,7 @@ int v_fputs(v_LPCSTR s, v_LPFILE fp)
         ++s;
     }
     return 0;
+#endif
 }
 
 /**************************************************************************/
@@ -721,11 +770,19 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list arg)
     n = vsprintf(buf, format, arg);
     len = strlen(buf);
     assert(len < v_FILE_MAX_BUFFER);
+
+#if (v_FMODE_TEXT == 0)
     if (fp->modes & v_FMODE_BINARY)
+#endif
     {
-        return (v_fwrite_raw(buf, len * sizeof(char), 1, fp) ? n : 0);
+        if (v_fwrite_raw(buf, len * sizeof(char), 1, fp))
+            return n;
+        else
+            return 0;
     }
+#if (v_FMODE_TEXT == 0)
     return v_fputs(buf, fp);
+#endif
 }
 
 /**************************************************************************/
