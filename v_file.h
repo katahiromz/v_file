@@ -24,7 +24,7 @@ extern "C"
  * 1. Please specify the sufficient buffer size for the insecure functions.
  */
 #define v_FILE_MAX_BUFFER   1024
-/* #define v_FILE_MAX_BUFFER   32 */
+/* #define v_FILE_MAX_BUFFER   128 */
 /* #define v_FILE_MAX_BUFFER   256 */
 
 /*
