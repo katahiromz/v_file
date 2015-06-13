@@ -323,9 +323,11 @@ int v_fputc(char c, v_LPFILE fp)
 
 int v_fread(v_LPVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp)
 {
+#if (v_FMODE_TEXT == 0)
     v_LPCHAR pch;
     int ch;
     v_fpos_t i, count;
+#endif
 
 #ifndef V_FILE_SPEED
     /* check parameters */
