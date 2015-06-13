@@ -23,15 +23,19 @@ extern "C"
 /*
  * 1. Please specify the sufficient buffer size for the insecure functions.
  */
-#define v_FILE_MAX_BUFFER   1024
-/* #define v_FILE_MAX_BUFFER   128 */
-/* #define v_FILE_MAX_BUFFER   256 */
+#ifndef v_FILE_MAX_BUFFER
+    #ifdef MSDOS
+        #define v_FILE_MAX_BUFFER   256
+    #else
+        #define v_FILE_MAX_BUFFER   1024
+    #endif
+#endif
 
 /*
  * 2. Which would you choose, speed or safety?
  */
-#define V_FILE_SPEED            /* speed */
-/* #undef V_FILE_SPEED */       /* safety */
+#define V_FILE_SPEED                /* speed */
+/* #undef V_FILE_SPEED */           /* safety */
 
 /**************************************************************************/
 /* constants */
