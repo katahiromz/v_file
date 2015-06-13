@@ -12,11 +12,11 @@ DOTEXE = .exe
 #
 CC = gcc
 
-CCFLAGS = -m32 -O0 -g -ggdb -static -Wall -pedantic     # x86 (Debug)
-#CCFLAGS = -m64 -O0 -g -ggdb -static -Wall -pedantic    # x64 (Debug)
+CCFLAGS = -m32 -D_DEBUG -O0 -g -ggdb -static -Wall -pedantic     # x86 (Debug)
+#CCFLAGS = -m64 -D_DEBUG -O0 -g -ggdb -static -Wall -pedantic    # x64 (Debug)
 
-#CCFLAGS = -m32 -O2 -static -Wall -pedantic             # x86 (Release)
-#CCFLAGS = -m64 -O2 -static -Wall -pedantic             # x64 (Release)
+#CCFLAGS = -m32 -DNDEBUG -O2 -static -Wall -pedantic             # x86 (Release)
+#CCFLAGS = -m64 -DNDEBUG -O2 -static -Wall -pedantic             # x64 (Release)
 
 TEST_OBJS = v_file$(DOTOBJ) v_file_test$(DOTOBJ)
 LIB_OBJS = v_file$(DOTOBJ)

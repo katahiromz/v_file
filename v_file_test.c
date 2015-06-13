@@ -31,7 +31,7 @@
 void v_file_test1_ms(void)
 {
     FILE *fp;
-    v_FILE *v_fp;
+    v_LPFILE v_fp;
     char *p, buf[16];
     int n;
 
@@ -90,7 +90,7 @@ void v_file_test1_ms(void)
 void v_file_test1_linux(void)
 {
     FILE *fp;
-    v_FILE *v_fp;
+    v_LPFILE v_fp;
     char *p, buf[16];
     int n;
 
@@ -149,7 +149,7 @@ void v_file_test1_linux(void)
 void v_file_test2_ms(void)
 {
     FILE *fp;
-    v_FILE *v_fp;
+    v_LPFILE v_fp;
     char buf[16];
     int n;
 
@@ -195,7 +195,7 @@ void v_file_test2_ms(void)
 void v_file_test2_linux(void)
 {
     FILE *fp;
-    v_FILE *v_fp;
+    v_LPFILE v_fp;
     char buf[16];
     int n;
 
@@ -247,7 +247,7 @@ void v_file_test2_linux(void)
 void v_file_test3(void)
 {
     FILE *fp;
-    v_FILE *v_fp;
+    v_LPFILE v_fp;
     char buf[16];
     int n;
 
@@ -300,7 +300,7 @@ void v_file_test3(void)
 void v_file_test4_ms(void)
 {
     FILE *fp;
-    v_FILE *v_fp;
+    v_LPFILE v_fp;
     int n;
 
     v_fp = v_fopen_w();
@@ -326,7 +326,7 @@ void v_file_test4_ms(void)
 void v_file_test4_linux(void)
 {
     FILE *fp;
-    v_FILE *v_fp;
+    v_LPFILE v_fp;
     int n;
 
     v_fp = v_fopen_w();
@@ -352,7 +352,7 @@ void v_file_test4_linux(void)
 void v_file_test5(void)
 {
     FILE *fp;
-    v_FILE *v_fp;
+    v_LPFILE v_fp;
     int n;
 
     v_fp = v_fopen_wb();
@@ -379,7 +379,7 @@ void v_file_test5(void)
 void v_file_test6(void)
 {
     FILE *fp;
-    v_FILE *v_fp;
+    v_LPFILE v_fp;
     char buf[32];
     int n;
 
@@ -404,7 +404,7 @@ void v_file_test6(void)
  */
 void v_file_test7_ms(void)
 {
-    v_FILE *v_fp;
+    v_LPFILE v_fp;
     char *buf[16];
     int n;
 
@@ -442,7 +442,7 @@ void v_file_test7_ms(void)
  */
 void v_file_test7_linux(void)
 {
-    v_FILE *v_fp;
+    v_LPFILE v_fp;
     char buf[16];
     int n;
 
@@ -480,7 +480,7 @@ void v_file_test7_linux(void)
  */
 void v_file_test8(void)
 {
-    v_FILE *v_fp;
+    v_LPFILE v_fp;
     char buf[16];
     int n;
 
@@ -518,7 +518,7 @@ void v_file_test8(void)
 
 int main(void)
 {
-    #if defined(_WIN32) || defined(MSDOS)
+    #if defined(MSDOS) || defined(WIN16) || defined(_WIN32)
         v_file_test1_ms();
         v_file_test2_ms();
         v_file_test3();

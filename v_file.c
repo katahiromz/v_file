@@ -33,10 +33,10 @@ extern "C"
 /**************************************************************************/
 /* opening / closing */
 
-v_FILE *
+v_LPFILE 
 v_fopen_internal(v_LPCVOID data, v_fpos_t index, v_fpos_t siz, int modes)
 {
-    v_FILE *fp;
+    v_LPFILE fp;
 
 #ifndef V_FILE_SPEED
     /* check parameters */
@@ -46,7 +46,7 @@ v_fopen_internal(v_LPCVOID data, v_fpos_t index, v_fpos_t siz, int modes)
 #endif
 
     /* allocate and store */
-    fp = (v_FILE *)calloc(1, sizeof(v_FILE));
+    fp = (v_LPFILE)calloc(1, sizeof(v_FILE));
     if (fp)
     {
         fp->data = (v_LPCHAR)malloc(siz + 1);
@@ -72,51 +72,51 @@ v_fopen_internal(v_LPCVOID data, v_fpos_t index, v_fpos_t siz, int modes)
 }
 
 #ifndef V_FILE_SPEED
-    v_FILE *v_fopen_r(v_LPCVOID data, v_fpos_t siz)
+    v_LPFILE v_fopen_r(v_LPCVOID data, v_fpos_t siz)
     {
         return v_fopen_internal(data, 0, siz, v_FMODE_READ | v_FMODE_TEXT);
     }
 
-    v_FILE *v_fopen_a(v_LPCVOID data, v_fpos_t siz)
+    v_LPFILE v_fopen_a(v_LPCVOID data, v_fpos_t siz)
     {
         return v_fopen_internal(data, siz, siz, v_FMODE_APPEND | v_FMODE_TEXT);
     }
 
-    v_FILE *v_fopen_rb(v_LPCVOID data, v_fpos_t siz)
+    v_LPFILE v_fopen_rb(v_LPCVOID data, v_fpos_t siz)
     {
         return v_fopen_internal(data, 0, siz, v_FMODE_READ | v_FMODE_BINARY);
     }
 
-    v_FILE *v_fopen_ab(v_LPCVOID data, v_fpos_t siz)
+    v_LPFILE v_fopen_ab(v_LPCVOID data, v_fpos_t siz)
     {
         return v_fopen_internal(data, siz, siz, v_FMODE_APPEND | v_FMODE_BINARY);
     }
 
-    v_FILE *v_fopen_rp(v_LPCVOID data, v_fpos_t siz)
+    v_LPFILE v_fopen_rp(v_LPCVOID data, v_fpos_t siz)
     {
         return v_fopen_internal(data, 0, siz, v_FMODE_READWRITE | v_FMODE_TEXT);
     }
 
-    v_FILE *v_fopen_ap(v_LPCVOID data, v_fpos_t siz)
+    v_LPFILE v_fopen_ap(v_LPCVOID data, v_fpos_t siz)
     {
         return v_fopen_internal(data, siz, siz, v_FMODE_APPEND | v_FMODE_TEXT);
     }
 
-    v_FILE *v_fopen_rpb(v_LPCVOID data, v_fpos_t siz)
+    v_LPFILE v_fopen_rpb(v_LPCVOID data, v_fpos_t siz)
     {
         return v_fopen_internal(data, 0, siz, v_FMODE_READWRITE | v_FMODE_BINARY);
     }
 
-    v_FILE *v_fopen_apb(v_LPCVOID data, v_fpos_t siz)
+    v_LPFILE v_fopen_apb(v_LPCVOID data, v_fpos_t siz)
     {
         return v_fopen_internal(data, siz, siz, v_FMODE_APPEND | v_FMODE_BINARY);
     }
 #endif  /* ndef V_FILE_SPEED */
 
-v_FILE *v_fopen_w(void)
+v_LPFILE v_fopen_w(void)
 {
-    v_FILE *fp;
-    fp = (v_FILE *)calloc(1, sizeof(v_FILE));
+    v_LPFILE fp;
+    fp = (v_LPFILE)calloc(1, sizeof(v_FILE));
     if (fp)
     {
         /* fp->data = NULL; */
@@ -127,10 +127,10 @@ v_FILE *v_fopen_w(void)
     return fp;
 }
 
-v_FILE *v_fopen_wb(void)
+v_LPFILE v_fopen_wb(void)
 {
-    v_FILE *fp;
-    fp = (v_FILE *)calloc(1, sizeof(v_FILE));
+    v_LPFILE fp;
+    fp = (v_LPFILE)calloc(1, sizeof(v_FILE));
     if (fp)
     {
         /* fp->data = NULL; */
@@ -141,7 +141,7 @@ v_FILE *v_fopen_wb(void)
     return fp;
 }
 
-int v_fclose(v_FILE *fp)
+int v_fclose(v_LPFILE fp)
 {
     assert(fp);
     if (fp)
@@ -153,7 +153,7 @@ int v_fclose(v_FILE *fp)
     return v_EOF;
 }
 
-v_LPCHAR v_fclose_detach(v_FILE *fp)
+v_LPCHAR v_fclose_detach(v_LPFILE fp)
 {
     v_LPCHAR data = NULL;
     assert(fp);
@@ -168,7 +168,7 @@ v_LPCHAR v_fclose_detach(v_FILE *fp)
 /**************************************************************************/
 /* binary transfer */
 
-int v_fread_raw(v_LPVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_FILE *fp)
+int v_fread_raw(v_LPVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp)
 {
     v_fpos_t count, read_size;
     v_LPCHAR pch;
@@ -207,8 +207,7 @@ int v_fread_raw(v_LPVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_FILE *fp)
     return count;
 }
 
-int v_fwrite_raw(v_LPCVOID ptr, v_fpos_t siz, v_fpos_t nelem,
-                 v_FILE *fp)
+int v_fwrite_raw(v_LPCVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp)
 {
     v_fpos_t increment, end;
     v_LPCHAR pch;
@@ -256,7 +255,7 @@ int v_fwrite_raw(v_LPCVOID ptr, v_fpos_t siz, v_fpos_t nelem,
 /**************************************************************************/
 /* read / write a character */
 
-int v_fgetc(v_FILE *fp)
+int v_fgetc(v_LPFILE fp)
 {
     int ch;
 
@@ -290,7 +289,7 @@ int v_fgetc(v_FILE *fp)
     return ch;
 }
 
-int v_fputc(char c, v_FILE *fp)
+int v_fputc(char c, v_LPFILE fp)
 {
 #ifndef V_FILE_SPEED
     /* check parameter */
@@ -299,7 +298,7 @@ int v_fputc(char c, v_FILE *fp)
         return v_EOF;
 #endif
 
-#if defined(_WIN32) || defined(MSDOS)
+#if defined(MSDOS) || defined(WIN16) || defined(_WIN32)
     if ((fp->modes & v_FMODE_BINARY) == 0)
     {
         /* text mode */
@@ -317,7 +316,7 @@ int v_fputc(char c, v_FILE *fp)
 /**************************************************************************/
 /* read / write buffer */
 
-int v_fread(v_LPVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_FILE *fp)
+int v_fread(v_LPVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp)
 {
     v_LPCHAR pch;
     int ch;
@@ -358,10 +357,9 @@ hell:
     return count;
 }
 
-int v_fwrite(v_LPCVOID ptr, v_fpos_t siz, v_fpos_t nelem,
-             v_FILE *fp)
+int v_fwrite(v_LPCVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp)
 {
-#if defined(_WIN32) || defined(MSDOS)
+#if defined(MSDOS) || defined(WIN16) || defined(_WIN32)
     v_LPCSTR pch;
     int ret;
     v_fpos_t i, count;
@@ -384,7 +382,7 @@ int v_fwrite(v_LPCVOID ptr, v_fpos_t siz, v_fpos_t nelem,
         return v_fwrite_raw(ptr, siz, nelem, fp);
     }
 
-#if defined(_WIN32) || defined(MSDOS)
+#if defined(MSDOS) || defined(WIN16) || defined(_WIN32)
     /* text mode */
     pch = (v_LPCSTR)ptr;
     for (count = 0; count < nelem; ++count)
@@ -406,13 +404,13 @@ hell:
 /**************************************************************************/
 /* file status */
 
-int v_feof(v_FILE *fp)
+int v_feof(v_LPFILE fp)
 {
     assert(fp);
     return (fp && fp->size <= fp->index);
 }
 
-int v_ferror(v_FILE *fp)
+int v_ferror(v_LPFILE fp)
 {
     assert(fp);
     if (fp == NULL)
@@ -424,7 +422,7 @@ int v_ferror(v_FILE *fp)
     return 0;
 }
 
-void v_clearerr(v_FILE *fp)
+void v_clearerr(v_LPFILE fp)
 {
     assert(fp);
 #ifndef V_FILE_SPEED
@@ -437,13 +435,13 @@ void v_clearerr(v_FILE *fp)
 /**************************************************************************/
 /* file position */
 
-long v_ftell(v_FILE *fp)
+long v_ftell(v_LPFILE fp)
 {
     assert(fp);
     return (fp ? (long)(fp->index) : 0);
 }
 
-int v_fgetpos(v_FILE *fp, v_fpos_t *pos)
+int v_fgetpos(v_LPFILE fp, v_fpos_t *pos)
 {
     assert(fp);
     if (fp && pos)
@@ -454,7 +452,7 @@ int v_fgetpos(v_FILE *fp, v_fpos_t *pos)
     return v_EOF;
 }
 
-int v_fsetpos(v_FILE *fp, const v_fpos_t *pos)
+int v_fsetpos(v_LPFILE fp, const v_fpos_t *pos)
 {
     assert(fp);
     if (fp && pos)
@@ -465,7 +463,7 @@ int v_fsetpos(v_FILE *fp, const v_fpos_t *pos)
     return v_EOF;
 }
 
-void v_rewind(v_FILE *fp)
+void v_rewind(v_LPFILE fp)
 {
     assert(fp);
     if (fp)
@@ -474,7 +472,7 @@ void v_rewind(v_FILE *fp)
     }
 }
 
-int v_fseek(v_FILE *fp, long offset, int type)
+int v_fseek(v_LPFILE fp, long offset, int type)
 {
     assert(fp);
     if (fp == NULL)
@@ -526,7 +524,7 @@ int v_fseek(v_FILE *fp, long offset, int type)
 /**************************************************************************/
 /* unget a character */
 
-int v_ungetc(char c, v_FILE *fp)
+int v_ungetc(char c, v_LPFILE fp)
 {
     if (fp == NULL || fp->index < sizeof(char))
         return v_EOF;
@@ -557,7 +555,7 @@ int v_ungetc(char c, v_FILE *fp)
 /**************************************************************************/
 /* read / write string */
 
-v_LPSTR v_fgets(v_LPSTR s, int n, v_FILE *fp)
+v_LPSTR v_fgets(v_LPSTR s, int n, v_LPFILE fp)
 {
     int i;
     char ch;
@@ -608,7 +606,7 @@ v_LPSTR v_fgets(v_LPSTR s, int n, v_FILE *fp)
     return s;
 }
 
-int v_fputs(v_LPCSTR s, v_FILE *fp)
+int v_fputs(v_LPCSTR s, v_LPFILE fp)
 {
     size_t len;
 
@@ -646,7 +644,7 @@ int v_fputs(v_LPCSTR s, v_FILE *fp)
 /**************************************************************************/
 /* scan */
 
-int v_fscanf(v_FILE *fp, v_LPCSTR format, ...)
+int v_fscanf(v_LPFILE fp, v_LPCSTR format, ...)
 {
     va_list va;
     int ret;
@@ -665,7 +663,7 @@ int v_fscanf(v_FILE *fp, v_LPCSTR format, ...)
     return ret;
 }
 
-int v_vfscanf(v_FILE *fp, v_LPCSTR format, va_list arg)
+int v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list arg)
 {
     char buf[v_FILE_MAX_BUFFER];
 
@@ -688,7 +686,7 @@ int v_vfscanf(v_FILE *fp, v_LPCSTR format, va_list arg)
 /**************************************************************************/
 /* print */
 
-int v_fprintf(v_FILE *fp, v_LPCSTR format, ...)
+int v_fprintf(v_LPFILE fp, v_LPCSTR format, ...)
 {
     va_list va;
     int n;
@@ -707,7 +705,7 @@ int v_fprintf(v_FILE *fp, v_LPCSTR format, ...)
     return n;
 }
 
-int v_vfprintf(v_FILE *fp, v_LPCSTR format, va_list arg)
+int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list arg)
 {
     int n;
     char buf[v_FILE_MAX_BUFFER];
@@ -734,7 +732,7 @@ int v_vfprintf(v_FILE *fp, v_LPCSTR format, va_list arg)
 /* flush */
 
 #ifndef V_FILE_SPEED
-    int v_fflush(v_FILE *fp)
+    int v_fflush(v_LPFILE fp)
     {
         /* NOTE: v_fflush does nothing */
         assert(fp);
@@ -747,13 +745,13 @@ int v_vfprintf(v_FILE *fp, v_LPCSTR format, va_list arg)
 
 #ifdef WIN16
     /* opening 16-bit Windows .exe resource as virtual file */
-    v_FILE *v_fopen_res16(HMODULE hMod, v_LPCSTR res_id, v_LPCSTR type)
+    v_LPFILE v_fopen_res16(HMODULE hMod, v_LPCSTR res_id, v_LPCSTR type)
     {
         HRSRC       hRsrc;
         HGLOBAL     hGlobal;
         LPVOID      data;
         DWORD       size;
-        v_FILE *    fp;
+        v_LPFILE    fp;
 
         if (hMod == NULL)
             hMod = GetModuleHandle(NULL);
@@ -778,13 +776,13 @@ int v_vfprintf(v_FILE *fp, v_LPCSTR format, va_list arg)
 
 #ifdef _WIN32
     /* opening Windows .exe resource as virtual file */
-    v_FILE *v_fopen_res(HMODULE hMod, LPCTSTR res_id, LPCTSTR type)
+    v_LPFILE v_fopen_res(HMODULE hMod, LPCTSTR res_id, LPCTSTR type)
     {
         HRSRC       hRsrc;
         HGLOBAL     hGlobal;
         LPVOID      data;
         DWORD       size;
-        v_FILE *    fp;
+        v_LPFILE    fp;
 
         if (hMod == NULL)
             hMod = GetModuleHandle(NULL);
