@@ -1,0 +1,50 @@
+############################################################################
+## Makefile.gcc
+## Copyright (C) 2015 Katayama Hirofumi MZ.  All rights reserved.
+############################################################################
+
+DOTOBJ = .o
+DOTEXE = .exe
+
+#
+# C compiler
+#
+CC = gcc
+
+CCFLAGS = -m32 -O0 -g -ggdb -static -Wall -pedantic     # x86 (Debug)
+#CCFLAGS = -m64 -O0 -g -ggdb -static -Wall -pedantic    # x64 (Debug)
+
+#CCFLAGS = -m32 -O2 -static -Wall -pedantic             # x86 (Release)
+#CCFLAGS = -m64 -O2 -static -Wall -pedantic             # x64 (Release)
+
+TEST_OBJS = v_file$(DOTOBJ) v_file_test$(DOTOBJ)
+LIB_OBJS = v_file$(DOTOBJ)
+
+LIBS = 
+
+all: lib test
+lib: libv_file.a
+test: v_file$(DOTEXE)
+	./v_file$(DOTEXE)
+libv_file.a: $(LIB_OBJS)
+	ar r libv_file.a $(LIB_OBJS)
+	ranlib libv_file.a
+
+v_file$(DOTEXE): $(TEST_OBJS)
+	$(CC) $(CCFLAGS) -o v_file$(DOTEXE) $(TEST_OBJS) $(LIBS)
+	chmod +x v_file$(DOTEXE)
+
+v_file$(DOTOBJ): v_file.c v_file.h
+	$(CC) $(CCFLAGS) -c -o v_file$(DOTOBJ) v_file.c
+v_file_test$(DOTOBJ): v_file_test.c v_file.h
+	$(CC) $(CCFLAGS) -c -o v_file_test$(DOTOBJ) v_file_test.c
+
+clean:
+	rm -f *.o
+	rm -f *.suo
+	rm -f *.sdf
+	rm -f *.user
+	rm -f *.ncb
+	rm -f *.filters
+	rm -fR Debug/
+	rm -fR Release/
