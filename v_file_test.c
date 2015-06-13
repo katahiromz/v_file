@@ -21,7 +21,7 @@
 #endif
 
 /**************************************************************************/
-/* the main function for testing */
+/* some functions for testing */
 
 /*
  * "r" #1
@@ -511,6 +511,9 @@ void v_file_test8(void)
     assert(n == 0);
 }
 
+/**************************************************************************/
+/* the main function for testing */
+
 int main(void)
 {
     #if defined(_WIN32) || defined(MSDOS)
@@ -534,3 +537,5 @@ int main(void)
     #endif
     return 0;
 }
+
+/**************************************************************************/

@@ -2,6 +2,7 @@
 ## Makefile.clang
 ## Copyright (C) 2015 Katayama Hirofumi MZ.  All rights reserved.
 ############################################################################
+# Usage: make -f Makefile.clang
 
 DOTOBJ = .o
 DOTEXE = 

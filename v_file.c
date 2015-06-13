@@ -24,11 +24,18 @@
 /* configuration */
 
 /*
- * Specify the sufficient buffer size for the insecure functions
+ * 1. Please specify the sufficient buffer size for the insecure functions.
  */
 #define v_FILE_MAX_BUFFER   1024
 /* #define v_FILE_MAX_BUFFER   32 */
 /* #define v_FILE_MAX_BUFFER   256 */
+
+
+/*
+ * 2. Which would you choose, speed or safety?
+ */
+#define V_FILE_SPEED            /* speed */
+/* #undef V_FILE_SPEED */       /* safety */
 
 /**************************************************************************/
 /* C/C++ switching */
@@ -48,6 +55,8 @@ extern "C"
 #define v_FMODE_READWRITE   6   /* read+write */
 #define v_FMODE_APPEND      14  /* append (includes v_FMODE_READWRITE) */
 #define v_FMODE_BINARY      16  /* binary mode */
+
+/* NOTE: Windows and MS-DOS can use "text mode" (not binary mode). */
 #if defined(_WIN32) || defined(MSDOS)
     #define v_FMODE_TEXT        0   /* text mode */
 #else
@@ -62,10 +71,12 @@ v_fopen_internal(const void *data, v_fpos_t index, v_fpos_t siz, int modes)
 {
     v_FILE *fp;
 
+#ifndef V_FILE_SPEED
     /* check parameters */
     assert(data || siz == 0);
     if (data == NULL && siz != 0)
         return NULL;
+#endif
 
     /* allocate and store */
     fp = (v_FILE *)calloc(1, sizeof(v_FILE));
@@ -139,10 +150,10 @@ v_FILE *v_fopen_w(void)
     fp = (v_FILE *)calloc(1, sizeof(v_FILE));
     if (fp)
     {
-        fp->data = NULL;
+        /* fp->data = NULL; */
         fp->modes = v_FMODE_WRITE | v_FMODE_TEXT;
-        fp->index = 0;
-        fp->size = 0;
+        /* fp->index = 0; */
+        /* fp->size = 0; */
     }
     return fp;
 }
@@ -153,10 +164,10 @@ v_FILE *v_fopen_wb(void)
     fp = (v_FILE *)calloc(1, sizeof(v_FILE));
     if (fp)
     {
-        fp->data = NULL;
+        /* fp->data = NULL; */
         fp->modes = v_FMODE_WRITE | v_FMODE_BINARY;
-        fp->index = 0;
-        fp->size = 0;
+        /* fp->index = 0; */
+        /* fp->size = 0; */
     }
     return fp;
 }
@@ -193,6 +204,7 @@ int v_fread_raw(void *ptr, v_fpos_t siz, v_fpos_t nelem, v_FILE *fp)
     v_fpos_t count, read_size;
     char *pch;
 
+#ifndef V_FILE_SPEED
     /* check parameters */
     assert(fp);
     if (v_ferror(fp))
@@ -201,6 +213,7 @@ int v_fread_raw(void *ptr, v_fpos_t siz, v_fpos_t nelem, v_FILE *fp)
         return 0;
     if (ptr == NULL || siz <= 0 || nelem <= 0)
         return 0;
+#endif
 
     /* check exceed */
     if (fp->size < fp->index)
@@ -231,6 +244,7 @@ int v_fwrite_raw(const void *ptr, v_fpos_t siz, v_fpos_t nelem,
     v_fpos_t increment, end;
     char *pch;
 
+#ifndef V_FILE_SPEED
     /* check parameters */
     assert(fp);
     if (v_ferror(fp))
@@ -239,6 +253,7 @@ int v_fwrite_raw(const void *ptr, v_fpos_t siz, v_fpos_t nelem,
         return 0;
     if (ptr == NULL || siz <= 0 || nelem <= 0)
         return 0;
+#endif
 
     /* calculate increment and the ending point */
     increment = siz * nelem;
@@ -276,11 +291,14 @@ int v_fgetc(v_FILE *fp)
 {
     int ch;
 
+#ifndef V_FILE_SPEED
     /* check parameter */
     assert(fp);
     /* check status */
     if (v_ferror(fp))
         return v_EOF;
+#endif
+
     if (fp->size < fp->index + sizeof(char))
         return v_EOF;
 
@@ -305,10 +323,12 @@ int v_fgetc(v_FILE *fp)
 
 int v_fputc(char c, v_FILE *fp)
 {
+#ifndef V_FILE_SPEED
     /* check parameter */
     assert(fp);
     if (fp == NULL)
         return v_EOF;
+#endif
 
 #if defined(_WIN32) || defined(MSDOS)
     if ((fp->modes & v_FMODE_BINARY) == 0)
@@ -334,6 +354,7 @@ int v_fread(void *ptr, v_fpos_t siz, v_fpos_t nelem, v_FILE *fp)
     int ch;
     v_fpos_t i, count;
 
+#ifndef V_FILE_SPEED
     /* check parameters */
     assert(fp);
     if (fp == NULL)
@@ -344,6 +365,8 @@ int v_fread(void *ptr, v_fpos_t siz, v_fpos_t nelem, v_FILE *fp)
         return 0;
     if (ptr == NULL || siz <= 0 || nelem <= 0)
         return 0;
+#endif
+
     if (fp->modes & v_FMODE_BINARY)
     {
         /* binary mode */
@@ -375,6 +398,7 @@ int v_fwrite(const void *ptr, v_fpos_t siz, v_fpos_t nelem,
     v_fpos_t i, count;
 #endif
 
+#ifndef V_FILE_SPEED
     /* check parameters */
     assert(fp);
     if (fp == NULL)
@@ -383,6 +407,8 @@ int v_fwrite(const void *ptr, v_fpos_t siz, v_fpos_t nelem,
         return 0;
     if (ptr == NULL || siz <= 0 || nelem <= 0)
         return 0;
+#endif
+
     if (fp->modes & v_FMODE_BINARY)
     {
         /* binary mode */
@@ -432,8 +458,10 @@ int v_ferror(v_FILE *fp)
 void v_clearerr(v_FILE *fp)
 {
     assert(fp);
+#ifndef V_FILE_SPEED
     if (fp == NULL)
         return;
+#endif
     fp->modes &= ~v_FMODE_ERROR;
 }
 
@@ -533,10 +561,13 @@ int v_ungetc(char c, v_FILE *fp)
 {
     if (fp == NULL || fp->index < sizeof(char))
         return v_EOF;
+
+#ifndef V_FILE_SPEED
     if (v_ferror(fp))
         return v_EOF;
     if ((fp->modes & v_FMODE_READ) == 0)
         return v_EOF;
+#endif
 
     if ((fp->modes & v_FMODE_BINARY) == 0)
     {
@@ -562,8 +593,15 @@ char *v_fgets(char *s, int n, v_FILE *fp)
     int i;
     char ch;
 
+#ifndef V_FILE_SPEED
     /* check parameters */
-    if (v_feof(fp) || n == 0)
+    if (n == 0)
+        return NULL;
+    if (fp == NULL)
+        return NULL;
+#endif
+
+    if (v_feof(fp))
         return NULL;
 
     /* ignore NUL */
@@ -605,11 +643,13 @@ int v_fputs(const char *s, v_FILE *fp)
 {
     size_t len;
 
+#ifndef V_FILE_SPEED
     /* check parameters */
-    assert(s);
-    assert(fp);
-    if (fp == NULL)
+    assert(s && fp);
+    if (s == NULL || fp == NULL)
         return v_EOF;
+#endif
+
     len = strlen(s);
     if (len == 0)
         return v_EOF;
@@ -642,10 +682,12 @@ int v_fscanf(v_FILE *fp, const char *format, ...)
     va_list va;
     int ret;
 
+#ifndef V_FILE_SPEED
     /* check parameters */
     assert(fp && format);
     if (fp == NULL || format == NULL)
         return v_EOF;
+#endif
 
     va_start(va, format);
     ret = v_vfscanf(fp, format, va);
@@ -658,10 +700,12 @@ int v_vfscanf(v_FILE *fp, const char *format, va_list arg)
 {
     char buf[v_FILE_MAX_BUFFER];
 
+#ifndef V_FILE_SPEED
     /* check parameters */
     assert(fp && format);
     if (fp == NULL || format == NULL)
         return v_EOF;
+#endif
 
     /* read one line */
     if (v_fgets(buf, v_FILE_MAX_BUFFER, fp))
@@ -680,10 +724,12 @@ int v_fprintf(v_FILE *fp, const char *format, ...)
     va_list va;
     int n;
 
+#ifndef V_FILE_SPEED
     /* check parameters */
     assert(fp && format);
     if (fp == NULL || format == NULL)
         return v_EOF;
+#endif
 
     va_start(va, format);
     n = v_vfprintf(fp, format, va);
@@ -698,10 +744,12 @@ int v_vfprintf(v_FILE *fp, const char *format, va_list arg)
     char buf[v_FILE_MAX_BUFFER];
     size_t len;
 
+#ifndef V_FILE_SPEED
     /* check parameters */
     assert(fp && format);
     if (fp == NULL || format == NULL)
         return v_EOF;
+#endif
 
     n = vsprintf(buf, format, arg);
     len = strlen(buf);
@@ -760,3 +808,5 @@ int v_fflush(v_FILE *fp)
 #ifdef __cplusplus
 } /* extern "C" */
 #endif  /* __cplusplus */
+
+/**************************************************************************/

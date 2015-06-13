@@ -2,6 +2,7 @@
 ## Makefile.gcc
 ## Copyright (C) 2015 Katayama Hirofumi MZ.  All rights reserved.
 ############################################################################
+# Usage: make -f Makefile.gcc
 
 DOTOBJ = .o
 DOTEXE = .exe

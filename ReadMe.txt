@@ -8,7 +8,7 @@ This library "v_file" virtualizes file I/O operations of <stdio.h>.
 Tested on Visual C++ 2013, MinGW g++, and clang.
 
 By replacing <stdio.h> items with v_file's items, file operations 
-become virtual file operations on memory.
+become virtual file operations on memory, as follows:
 
     -------------------+-----------------------
     <stdio.h>          | "v_file.h"
@@ -41,7 +41,7 @@ become virtual file operations on memory.
 Just add "v_" at the beginning of each name. It's simple.
 
 The v_fopen_* functions store the specified data into 
-the v_FILE structure, and set the file position.
+the v_FILE structure, if any; and set the file position.
 
 /////////////////////////////////////////////////////
 // Katayama Hirofumi MZ (katahiromz) [ARMYANT]

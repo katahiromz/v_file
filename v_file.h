@@ -137,7 +137,11 @@ int v_vfscanf(v_FILE *fp, const char *format, va_list arg);
 /**************************************************************************/
 /* flush */
 
-int v_fflush(v_FILE *fp);
+#ifndef V_FILE_SPEED
+    int v_fflush(v_FILE *fp);
+#else
+    #define v_fflush(fp)
+#endif
 
 /**************************************************************************/
 /* Windows .exe resource */
