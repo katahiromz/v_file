@@ -518,7 +518,7 @@ void v_file_test8(void)
 
 int main(void)
 {
-    #if defined(MSDOS) || defined(WIN16) || defined(_WIN32)
+    #if (v_FMODE_TEXT == 0)
         v_file_test1_ms();
         v_file_test2_ms();
         v_file_test3();

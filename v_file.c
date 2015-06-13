@@ -368,7 +368,7 @@ hell:
 
 int v_fwrite(v_LPCVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp)
 {
-#if defined(MSDOS) || defined(WIN16) || defined(_WIN32)
+#if (v_FMODE_TEXT == 0)
     v_LPCSTR pch;
     int ret;
     v_fpos_t i, count;
