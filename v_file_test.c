@@ -5,8 +5,6 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
-#include "v_file.h"
-
 #ifdef __cplusplus
     #include <cstdlib>
     #include <cstdio>
@@ -19,6 +17,10 @@
     #include <string.h>
     #include <assert.h>
 #endif
+
+/**************************************************************************/
+
+#include "v_file.h"
 
 /**************************************************************************/
 /* some functions for testing */

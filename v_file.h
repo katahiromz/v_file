@@ -18,11 +18,49 @@ extern "C"
 #endif  /* __cplusplus */
 
 /**************************************************************************/
+/* configuration */
+
+/*
+ * 1. Please specify the sufficient buffer size for the insecure functions.
+ */
+#define v_FILE_MAX_BUFFER   1024
+/* #define v_FILE_MAX_BUFFER   32 */
+/* #define v_FILE_MAX_BUFFER   256 */
+
+/*
+ * 2. Which would you choose, speed or safety?
+ */
+#define V_FILE_SPEED            /* speed */
+/* #undef V_FILE_SPEED */       /* safety */
+
+/**************************************************************************/
+/* constants */
 
 /* virtual "SEEK_*" values */
 #define v_SEEK_CUR  1
 #define v_SEEK_END  2
 #define v_SEEK_SET  0
+
+/* virtual file modes */
+#define v_FMODE_ERROR       1   /* is there any error? */
+#define v_FMODE_READ        2   /* read */
+#define v_FMODE_WRITE       4   /* write */
+#define v_FMODE_READWRITE   6   /* read+write */
+#define v_FMODE_APPEND      14  /* append (includes v_FMODE_READWRITE) */
+#define v_FMODE_BINARY      16  /* binary mode */
+
+/* NOTE: Windows and MS-DOS can use "text mode" (not binary mode). */
+#if defined(_WIN32) || defined(MSDOS)
+    #define v_FMODE_TEXT        0   /* text mode */
+#else
+    #define v_FMODE_TEXT        v_FMODE_BINARY
+#endif
+
+/* virtual end of file (EOF) */
+#define v_EOF (-1)
+
+/**************************************************************************/
+/* types */
 
 /* virtual "fpos_t" type */
 typedef unsigned long v_fpos_t;
@@ -36,11 +74,11 @@ typedef struct v_FILE
     int         modes;      /* virtual file modes */
 } v_FILE;
 
-/* virtual end of file (EOF) */
-#define v_EOF (-1)
-
 /**************************************************************************/
 /* opening / closing */
+
+v_FILE *
+v_fopen_internal(const void *data, v_fpos_t index, v_fpos_t siz, int modes);
 
 /*
  * text mode
@@ -152,6 +190,27 @@ int v_vfscanf(v_FILE *fp, const char *format, va_list arg);
     #endif
     /* opening Windows .exe resource as virtual file */
     v_FILE *v_fopen_res(HMODULE hMod, LPCTSTR res_id, LPCTSTR type);
+#endif
+
+/**************************************************************************/
+
+#ifdef V_FILE_SPEED
+    #define v_fopen_r(data, siz) \
+        v_fopen_internal((data), 0, (siz), v_FMODE_READ | v_FMODE_TEXT)
+    #define v_fopen_a(data, siz) \
+        v_fopen_internal((data), (siz), (siz), v_FMODE_APPEND | v_FMODE_TEXT)
+    #define v_fopen_rb(data, siz) \
+        v_fopen_internal((data), 0, (siz), v_FMODE_READ | v_FMODE_BINARY)
+    #define v_fopen_ab(data, siz) \
+        v_fopen_internal((data), (siz), (siz), v_FMODE_APPEND | v_FMODE_BINARY)
+    #define v_fopen_rp(data, siz) \
+        v_fopen_internal((data), 0, (siz), v_FMODE_READWRITE | v_FMODE_TEXT)
+    #define v_fopen_ap(data, siz) \
+        v_fopen_internal((data), (siz), (siz), v_FMODE_APPEND | v_FMODE_TEXT)
+    #define v_fopen_rpb(data, siz) \
+        v_fopen_internal((data), 0, (siz), v_FMODE_READWRITE | v_FMODE_BINARY)
+    #define v_fopen_apb(data, siz) \
+        v_fopen_internal((data), (siz), (siz), v_FMODE_APPEND | v_FMODE_BINARY)
 #endif
 
 /**************************************************************************/

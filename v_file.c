@@ -5,8 +5,6 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
-#include "v_file.h"
-
 #ifdef __cplusplus
     #include <cstdlib>
     #include <cstdio>
@@ -21,21 +19,8 @@
 #endif
 
 /**************************************************************************/
-/* configuration */
 
-/*
- * 1. Please specify the sufficient buffer size for the insecure functions.
- */
-#define v_FILE_MAX_BUFFER   1024
-/* #define v_FILE_MAX_BUFFER   32 */
-/* #define v_FILE_MAX_BUFFER   256 */
-
-
-/*
- * 2. Which would you choose, speed or safety?
- */
-#define V_FILE_SPEED            /* speed */
-/* #undef V_FILE_SPEED */       /* safety */
+#include "v_file.h"
 
 /**************************************************************************/
 /* C/C++ switching */
@@ -46,27 +31,9 @@ extern "C"
 #endif  /* __cplusplus */
 
 /**************************************************************************/
-/* private constants */
-
-/* virtual file modes */
-#define v_FMODE_ERROR       1   /* is there any error? */
-#define v_FMODE_READ        2   /* read */
-#define v_FMODE_WRITE       4   /* write */
-#define v_FMODE_READWRITE   6   /* read+write */
-#define v_FMODE_APPEND      14  /* append (includes v_FMODE_READWRITE) */
-#define v_FMODE_BINARY      16  /* binary mode */
-
-/* NOTE: Windows and MS-DOS can use "text mode" (not binary mode). */
-#if defined(_WIN32) || defined(MSDOS)
-    #define v_FMODE_TEXT        0   /* text mode */
-#else
-    #define v_FMODE_TEXT        v_FMODE_BINARY
-#endif
-
-/**************************************************************************/
 /* opening / closing */
 
-static v_FILE *
+v_FILE *
 v_fopen_internal(const void *data, v_fpos_t index, v_fpos_t siz, int modes)
 {
     v_FILE *fp;
@@ -104,45 +71,47 @@ v_fopen_internal(const void *data, v_fpos_t index, v_fpos_t siz, int modes)
     return fp;
 }
 
-v_FILE *v_fopen_r(const void *data, v_fpos_t siz)
-{
-    return v_fopen_internal(data, 0, siz, v_FMODE_READ | v_FMODE_TEXT);
-}
+#ifndef V_FILE_SPEED
+    v_FILE *v_fopen_r(const void *data, v_fpos_t siz)
+    {
+        return v_fopen_internal(data, 0, siz, v_FMODE_READ | v_FMODE_TEXT);
+    }
 
-v_FILE *v_fopen_a(const void *data, v_fpos_t siz)
-{
-    return v_fopen_internal(data, siz, siz, v_FMODE_APPEND | v_FMODE_TEXT);
-}
+    v_FILE *v_fopen_a(const void *data, v_fpos_t siz)
+    {
+        return v_fopen_internal(data, siz, siz, v_FMODE_APPEND | v_FMODE_TEXT);
+    }
 
-v_FILE *v_fopen_rb(const void *data, v_fpos_t siz)
-{
-    return v_fopen_internal(data, 0, siz, v_FMODE_READ | v_FMODE_BINARY);
-}
+    v_FILE *v_fopen_rb(const void *data, v_fpos_t siz)
+    {
+        return v_fopen_internal(data, 0, siz, v_FMODE_READ | v_FMODE_BINARY);
+    }
 
-v_FILE *v_fopen_ab(const void *data, v_fpos_t siz)
-{
-    return v_fopen_internal(data, siz, siz, v_FMODE_APPEND | v_FMODE_BINARY);
-}
+    v_FILE *v_fopen_ab(const void *data, v_fpos_t siz)
+    {
+        return v_fopen_internal(data, siz, siz, v_FMODE_APPEND | v_FMODE_BINARY);
+    }
 
-v_FILE *v_fopen_rp(const void *data, v_fpos_t siz)
-{
-    return v_fopen_internal(data, 0, siz, v_FMODE_READWRITE | v_FMODE_TEXT);
-}
+    v_FILE *v_fopen_rp(const void *data, v_fpos_t siz)
+    {
+        return v_fopen_internal(data, 0, siz, v_FMODE_READWRITE | v_FMODE_TEXT);
+    }
 
-v_FILE *v_fopen_ap(const void *data, v_fpos_t siz)
-{
-    return v_fopen_internal(data, siz, siz, v_FMODE_APPEND | v_FMODE_TEXT);
-}
+    v_FILE *v_fopen_ap(const void *data, v_fpos_t siz)
+    {
+        return v_fopen_internal(data, siz, siz, v_FMODE_APPEND | v_FMODE_TEXT);
+    }
 
-v_FILE *v_fopen_rpb(const void *data, v_fpos_t siz)
-{
-    return v_fopen_internal(data, 0, siz, v_FMODE_READWRITE | v_FMODE_BINARY);
-}
+    v_FILE *v_fopen_rpb(const void *data, v_fpos_t siz)
+    {
+        return v_fopen_internal(data, 0, siz, v_FMODE_READWRITE | v_FMODE_BINARY);
+    }
 
-v_FILE *v_fopen_apb(const void *data, v_fpos_t siz)
-{
-    return v_fopen_internal(data, siz, siz, v_FMODE_APPEND | v_FMODE_BINARY);
-}
+    v_FILE *v_fopen_apb(const void *data, v_fpos_t siz)
+    {
+        return v_fopen_internal(data, siz, siz, v_FMODE_APPEND | v_FMODE_BINARY);
+    }
+#endif  /* ndef V_FILE_SPEED */
 
 v_FILE *v_fopen_w(void)
 {
@@ -764,12 +733,14 @@ int v_vfprintf(v_FILE *fp, const char *format, va_list arg)
 /**************************************************************************/
 /* flush */
 
-int v_fflush(v_FILE *fp)
-{
-    /* NOTE: v_fflush does nothing */
-    assert(fp);
-    return 0;
-}
+#ifndef V_FILE_SPEED
+    int v_fflush(v_FILE *fp)
+    {
+        /* NOTE: v_fflush does nothing */
+        assert(fp);
+        return 0;
+    }
+#endif
 
 /**************************************************************************/
 /* Windows .exe resource */
