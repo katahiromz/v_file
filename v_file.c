@@ -9,12 +9,14 @@
     #include <cstdlib>
     #include <cstdio>
     #include <cstring>
+    #include <cerrno>
     #include <cassert>
     using namespace std;
 #else
     #include <stdlib.h>
     #include <stdio.h>
     #include <string.h>
+    #include <errno.h>
     #include <assert.h>
 #endif
 
@@ -860,6 +862,246 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list arg)
         return fp;
     }
 #endif  /* _WIN32 */
+
+/**************************************************************************/
+/* secure functions */
+
+#ifdef __V_FILE_WANT_SECURE_LIB__
+    v_errno_t v_fopen_r_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz)
+    {
+        assert(pfp);
+        assert(data || siz == 0);
+        if (pfp && (data || siz == 0))
+        {
+            *pfp = v_fopen_r(data, siz);
+            errno = 0;
+        }
+        else
+        {
+            errno = EINVAL;
+        }
+        return errno;
+    }
+
+    v_errno_t v_fopen_w_s(v_FILE ** pfp)
+    {
+        assert(pfp);
+        if (pfp)
+        {
+            *pfp = v_fopen_w();
+            errno = 0;
+        }
+        else
+        {
+            errno = EINVAL;
+        }
+        return errno;
+    }
+
+    v_errno_t v_fopen_a_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz)
+    {
+        assert(pfp);
+        assert(data || siz == 0);
+        if (pfp && (data || siz == 0))
+        {
+            *pfp = v_fopen_a(data, siz);
+            errno = 0;
+        }
+        else
+        {
+            errno = EINVAL;
+        }
+        return errno;
+    }
+
+    v_errno_t v_fopen_rp_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz)
+    {
+        assert(pfp);
+        assert(data || siz == 0);
+        if (pfp && (data || siz == 0))
+        {
+            *pfp = v_fopen_rp(data, siz);
+            errno = 0;
+        }
+        else
+        {
+            errno = EINVAL;
+        }
+        return errno;
+    }
+
+    v_errno_t v_fopen_ap_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz)
+    {
+        assert(pfp);
+        assert(data || siz == 0);
+        if (pfp && (data || siz == 0))
+        {
+            *pfp = v_fopen_ap(data, siz);
+            errno = 0;
+        }
+        else
+        {
+            errno = EINVAL;
+        }
+        return errno;
+    }
+
+    v_errno_t v_fopen_rb_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz)
+    {
+        assert(pfp);
+        assert(data || siz == 0);
+        if (pfp && (data || siz == 0))
+        {
+            *pfp = v_fopen_rb(data, siz);
+            errno = 0;
+        }
+        else
+        {
+            errno = EINVAL;
+        }
+        return errno;
+    }
+
+    v_errno_t v_fopen_wb_s(v_FILE ** pfp)
+    {
+        assert(pfp);
+        if (pfp)
+        {
+            *pfp = v_fopen_wb();
+            errno = 0;
+        }
+        else
+        {
+            errno = EINVAL;
+        }
+        return errno;
+    }
+
+    v_errno_t v_fopen_ab_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz)
+    {
+        assert(pfp);
+        assert(data || siz == 0);
+        if (pfp && (data || siz == 0))
+        {
+            *pfp = v_fopen_ab(data, siz);
+            errno = 0;
+        }
+        else
+        {
+            errno = EINVAL;
+        }
+        return errno;
+    }
+
+    v_errno_t v_fopen_rpb_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz)
+    {
+        assert(pfp);
+        assert(data || siz == 0);
+        if (pfp && (data || siz == 0))
+        {
+            *pfp = v_fopen_rpb(data, siz);
+            errno = 0;
+        }
+        else
+        {
+            errno = EINVAL;
+        }
+        return errno;
+    }
+
+    v_errno_t v_fopen_apb_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz)
+    {
+        assert(pfp);
+        assert(data || siz == 0);
+        if (pfp && (data || siz == 0))
+        {
+            *pfp = v_fopen_apb(data, siz);
+            errno = 0;
+        }
+        else
+        {
+            errno = EINVAL;
+        }
+        return errno;
+    }
+
+    v_errno_t v_clearerr_s(v_FILE *fp)
+    {
+        assert(fp);
+        if (fp)
+        {
+            v_clearerr(fp);
+            errno = 0;
+        }
+        else
+        {
+            errno = EINVAL;
+        }
+        return errno;
+    }
+
+    int v_fscanf_s(v_FILE *fp, v_LPCSTR format, ...)
+    {
+        va_list va;
+        int ret;
+
+        assert(fp && format);
+        if (fp && format)
+        {
+            va_start(va, format);
+            ret = v_vfscanf(fp, format, va);
+            va_end(va);
+            errno = 0;
+        }
+        else
+        {
+            errno = EINVAL;
+            ret = v_EOF;
+        }
+        return ret;
+    }
+
+    int v_fprintf_s(v_FILE *fp, v_LPCSTR format, ...)
+    {
+        va_list va;
+        int n;
+
+        assert(fp);
+        assert(format);
+        if (fp && format)
+        {
+            va_start(va, format);
+            n = v_vfprintf(fp, format, va);
+            va_end(va);
+            errno = 0;
+        }
+        else
+        {
+            errno = EINVAL;
+            n = v_EOF;
+        }
+        return n;
+    }
+
+    int v_vfprintf_s(v_FILE *fp, v_LPCSTR format, va_list va)
+    {
+        int n;
+
+        assert(fp);
+        assert(format);
+        if (fp && format)
+        {
+            n = v_vfprintf(fp, format, va);
+            errno = 0;
+        }
+        else
+        {
+            errno = EINVAL;
+            n = v_EOF;
+        }
+        return n;
+    }
+#endif  /* def __V_FILE_WANT_SECURE_LIB__ */
 
 /**************************************************************************/
 /* C/C++ switching */

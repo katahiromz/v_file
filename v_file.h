@@ -43,6 +43,12 @@ extern "C"
 #define V_FILE_SPEED                /* speed */
 /* #undef V_FILE_SPEED */           /* safety */
 
+/*
+ * 3. Would you like the secure functions?
+ */
+#define __V_FILE_WANT_SECURE_LIB__          /* Yes */
+/* #undef __V_FILE_WANT_SECURE_LIB__ */     /* No */
+
 /**************************************************************************/
 /* constants */
 
@@ -251,6 +257,37 @@ int v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list arg);
     #define v_fopen_apb(data, siz) \
         v_fopen_intern((data), (siz), (siz), v_FMODE_APPEND | v_FMODE_BINARY)
 #endif  /* def V_FILE_SPEED */
+
+/**************************************************************************/
+/* secure functions */
+
+typedef int v_errno_t;
+
+#ifdef __V_FILE_WANT_SECURE_LIB__
+    v_errno_t v_fopen_r_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz);
+    v_errno_t v_fopen_w_s(v_FILE ** pfp);
+    v_errno_t v_fopen_a_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz);
+
+    v_errno_t v_fopen_rp_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz);
+    #define   v_fopen_wp_s v_fopen_rp_s
+    v_errno_t v_fopen_ap_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz);
+
+    v_errno_t v_fopen_rb_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz);
+    v_errno_t v_fopen_wb_s(v_FILE ** pfp);
+    v_errno_t v_fopen_ab_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz);
+
+    v_errno_t v_fopen_rpb_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz);
+    #define   v_fopen_wpb_s v_fopen_rp_s
+    v_errno_t v_fopen_apb_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz);
+
+    #define v_tmpfile_s v_fopen_wpb_s
+
+    int v_fscanf_s(v_FILE *fp, v_LPCSTR format, ...);
+    int v_fprintf_s(v_FILE *fp, v_LPCSTR format, ...);
+    int v_vfprintf_s(v_FILE *fp, v_LPCSTR format, va_list va);
+
+    v_errno_t v_clearerr_s(v_FILE *fp);
+#endif  /* def __V_FILE_WANT_SECURE_LIB__ */
 
 /**************************************************************************/
 
