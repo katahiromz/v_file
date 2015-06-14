@@ -1,0 +1,59 @@
+############################################################################
+## Makefile.bcc32
+## Copyright (C) 2015 Katayama Hirofumi MZ.  All rights reserved.
+############################################################################
+# Usage: make -f Makefile.bcc32
+
+DOTOBJ = .obj
+DOTEXE = .exe
+CURDIR = .\\
+
+#
+# C compiler
+#
+CC = bcc32
+
+CCFLAGS = -WC -D_DEBUG -Od -v -y        # x86 (Debug)
+
+#CCFLAGS = -WC -DNDEBUG -O2             # x86 (Release)
+
+TEST_PROGRAM = v_file_test$(DOTEXE)
+TEST_OBJS = v_file$(DOTOBJ) v_file_test$(DOTOBJ)
+TEST_LIBS = 
+
+LIBRARY = v_file.lib
+LIBRARY_OBJS = v_file$(DOTOBJ)
+
+all: library test
+library: v_file.lib
+test: $(TEST_PROGRAM)
+	$(CURDIR)$(TEST_PROGRAM)
+
+$(LIBRARY): $(LIBRARY_OBJS)
+	if exist $(LIBRARY) del v_file.lib
+	tlib $(LIBRARY) +v_file$(DOTOBJ)
+
+$(TEST_PROGRAM): $(TEST_OBJS)
+	$(CC) $(CCFLAGS) -e$(TEST_PROGRAM) $(TEST_OBJS) $(TEST_LIBS)
+
+v_file$(DOTOBJ): v_file.c v_file.h
+	$(CC) $(CCFLAGS) -c -ov_file$(DOTOBJ) v_file.c
+v_file_test$(DOTOBJ): v_file_test.c v_file.h
+	$(CC) $(CCFLAGS) -c -ov_file_test$(DOTOBJ) v_file_test.c
+
+clean:
+	if exist *.obj del *.obj
+	if exist *.suo del /A *.suo
+	if exist *.sdf del *.sdf
+	if exist *.user del *.user
+	if exist *.ncb del *.ncb
+	if exist *.filters del *.filters
+	if exist Debug rmdir /S /Q Debug
+	if exist Release rmdir /S /Q Release
+
+extra_clean: clean
+	if exist *.obj del *.obj
+	if exist *.tds del *.tds
+	if exist *.lib del *.lib
+	if exist lib*.a del lib*.a
+	if exist *.exe del *.exe
