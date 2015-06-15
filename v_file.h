@@ -4,7 +4,7 @@
 /**************************************************************************/
 
 #ifndef KATAHIROMZ_V_FILE_H_
-#define KATAHIROMZ_V_FILE_H_  /* version */ 1 
+#define KATAHIROMZ_V_FILE_H_  /* version */ 2
 
 #ifdef __cplusplus
     #include <cstdarg>
@@ -40,14 +40,27 @@ extern "C"
 /*
  * 2. Which would you choose, speed or safety?
  */
-#define V_FILE_SPEED                /* speed */
-/* #undef V_FILE_SPEED */           /* safety */
+/* #define V_FILE_SPEED */          /* speed */
+#undef V_FILE_SPEED                 /* safety */
 
 /*
  * 3. Would you like the secure functions?
  */
-#define __V_FILE_WANT_SECURE_LIB__          /* Yes */
-/* #undef __V_FILE_WANT_SECURE_LIB__ */     /* No */
+/* #define __V_FILE_WANT_SECURE_LIB__ */    /* Yes */
+#undef __V_FILE_WANT_SECURE_LIB__           /* No */
+
+/*
+ * 4. Would you use the v_file standard I/O?
+ */
+#define V_FILE_USE_STDIO                    /* Yes */
+/* #undef V_FILE_USE_STDIO */               /* No */
+
+/**************************************************************************/
+/* validation */
+
+#if defined(V_FILE_SPEED) && defined(__V_FILE_WANT_SECURE_LIB__)
+    #error You lose.
+#endif
 
 /**************************************************************************/
 /* constants */
@@ -238,6 +251,39 @@ int v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list arg);
 #endif
 
 /**************************************************************************/
+/* the v_file standard I/O */
+
+#ifdef V_FILE_USE_STDIO
+    extern v_LPFILE v_stdin;
+    extern v_LPFILE v_stdout;
+    extern v_LPFILE v_stderr;
+
+    void v_file_init_stdio(v_LPCVOID input_data, v_fpos_t input_size);
+    void v_file_destroy_stdio(void);
+
+    #ifdef V_FILE_SPEED
+        #define v_getchar() v_fgetc(v_stdin)
+        #define v_putchar(c) v_fputc((c), v_stdout);
+        #define v_gets(s) v_fgets((s), v_FILE_MAX_BUFFER, v_stdin);
+        #define v_puts(s) (v_fputs((s), v_stdout), v_putchar('\n'), 0)
+    #else
+        int v_getchar(void);
+        int v_putchar(char c);
+        v_LPSTR v_gets(v_LPSTR s);
+        int v_puts(v_LPCSTR s);
+    #endif
+
+    #define v_fgetchar v_getchar
+    #define v_fputchar v_putchar
+
+    int v_printf(v_LPCSTR format, ...);
+    int v_vprintf(v_LPCSTR format, va_list arg);
+
+    int v_scanf(v_LPFILE fp, v_LPCSTR format, ...);
+    int v_vscanf(v_LPFILE fp, v_LPCSTR format, va_list arg);
+#endif  /* def V_FILE_USE_STDIO */
+
+/**************************************************************************/
 
 #ifdef V_FILE_SPEED
     #define v_fopen_r(data, siz) \
@@ -264,21 +310,21 @@ int v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list arg);
 typedef int v_errno_t;
 
 #ifdef __V_FILE_WANT_SECURE_LIB__
-    v_errno_t v_fopen_r_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz);
-    v_errno_t v_fopen_w_s(v_FILE ** pfp);
-    v_errno_t v_fopen_a_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz);
+    v_errno_t v_fopen_r_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz);
+    v_errno_t v_fopen_w_s(v_FILE **pfp);
+    v_errno_t v_fopen_a_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz);
 
-    v_errno_t v_fopen_rp_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz);
+    v_errno_t v_fopen_rp_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz);
     #define   v_fopen_wp_s v_fopen_rp_s
-    v_errno_t v_fopen_ap_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz);
+    v_errno_t v_fopen_ap_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz);
 
-    v_errno_t v_fopen_rb_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz);
-    v_errno_t v_fopen_wb_s(v_FILE ** pfp);
-    v_errno_t v_fopen_ab_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz);
+    v_errno_t v_fopen_rb_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz);
+    v_errno_t v_fopen_wb_s(v_FILE **pfp);
+    v_errno_t v_fopen_ab_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz);
 
-    v_errno_t v_fopen_rpb_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz);
+    v_errno_t v_fopen_rpb_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz);
     #define   v_fopen_wpb_s v_fopen_rp_s
-    v_errno_t v_fopen_apb_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz);
+    v_errno_t v_fopen_apb_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz);
 
     #define v_tmpfile_s v_fopen_wpb_s
 

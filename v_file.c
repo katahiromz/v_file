@@ -864,10 +864,137 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list arg)
 #endif  /* _WIN32 */
 
 /**************************************************************************/
+/* the v_file standard I/O */
+
+#ifdef V_FILE_USE_STDIO
+    v_LPFILE v_stdin = NULL;
+    v_LPFILE v_stdout = NULL;
+    v_LPFILE v_stderr = NULL;
+
+    void v_file_init_stdio(v_LPCVOID input_data, v_fpos_t input_size)
+    {
+        v_stdin = v_fopen_r(input_data, input_size);
+        v_stdout = v_fopen_w();
+        v_stderr = v_fopen_w();
+    }
+
+    void v_file_destroy_stdio(void)
+    {
+        v_fclose(v_stdin);
+        v_fclose(v_stdout);
+        v_fclose(v_stderr);
+        v_stdin = NULL;
+        v_stdout = NULL;
+        v_stderr = NULL;
+    }
+
+    #ifndef V_FILE_SPEED
+        int v_getchar(void)
+        {
+            assert(v_stdin);
+            return v_fgetc(v_stdin);
+        }
+
+        int v_putchar(char c)
+        {
+            assert(v_stdout);
+            return v_fputc(c, v_stdout);
+        }
+
+        v_LPSTR v_gets(v_LPSTR s)
+        {
+            assert(v_stdin);
+            return v_fgets(s, v_FILE_MAX_BUFFER, v_stdin);
+        }
+
+        int v_puts(v_LPCSTR s)
+        {
+            assert(v_stdout);
+            v_fputs(s, v_stdout);
+            v_putchar('\n');
+			return (v_stdout ? 0 : -1);
+        }
+    #endif  /* ndef V_FILE_SPEED */
+
+    int v_printf(v_LPCSTR format, ...)
+    {
+        va_list va;
+        int n;
+
+#ifndef V_FILE_SPEED
+        /* check parameters */
+        assert(v_stdout && format);
+        if (v_stdout == NULL || format == NULL)
+            return v_EOF;
+#endif
+
+        va_start(va, format);
+        n = v_vfprintf(v_stdout, format, va);
+        va_end(va);
+
+        return n;
+    }
+
+    int v_vprintf(v_LPCSTR format, va_list arg)
+    {
+        int n;
+
+#ifndef V_FILE_SPEED
+        /* check parameters */
+        assert(v_stdout && format);
+        if (v_stdout == NULL || format == NULL)
+            return v_EOF;
+#endif
+
+        n = v_vfprintf(v_stdout, format, arg);
+        return n;
+    }
+
+    int v_scanf(v_LPFILE fp, v_LPCSTR format, ...)
+    {
+        va_list va;
+        int ret;
+
+#ifndef V_FILE_SPEED
+        /* check parameters */
+        assert(v_stdin && format);
+        if (v_stdin == NULL || format == NULL)
+            return v_EOF;
+#endif
+
+        va_start(va, format);
+        ret = v_vfscanf(v_stdin, format, va);
+        va_end(va);
+
+        return ret;
+    }
+
+    int v_vscanf(v_LPFILE fp, v_LPCSTR format, va_list arg)
+    {
+        char buf[v_FILE_MAX_BUFFER];
+
+#ifndef V_FILE_SPEED
+        /* check parameters */
+        assert(v_stdin && format);
+        if (v_stdin == NULL || format == NULL)
+            return v_EOF;
+#endif
+
+        /* read one line */
+        if (v_fgets(buf, v_FILE_MAX_BUFFER, v_stdin))
+        {
+            /* FIXME: one line only? */
+            return vsscanf(buf, format, arg);
+        }
+        return v_EOF;
+    }
+#endif  /* def V_FILE_USE_STDIO */
+
+/**************************************************************************/
 /* secure functions */
 
 #ifdef __V_FILE_WANT_SECURE_LIB__
-    v_errno_t v_fopen_r_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz)
+    v_errno_t v_fopen_r_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz)
     {
         assert(pfp);
         assert(data || siz == 0);
@@ -883,7 +1010,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list arg)
         return errno;
     }
 
-    v_errno_t v_fopen_w_s(v_FILE ** pfp)
+    v_errno_t v_fopen_w_s(v_FILE **pfp)
     {
         assert(pfp);
         if (pfp)
@@ -898,7 +1025,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list arg)
         return errno;
     }
 
-    v_errno_t v_fopen_a_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz)
+    v_errno_t v_fopen_a_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz)
     {
         assert(pfp);
         assert(data || siz == 0);
@@ -914,7 +1041,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list arg)
         return errno;
     }
 
-    v_errno_t v_fopen_rp_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz)
+    v_errno_t v_fopen_rp_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz)
     {
         assert(pfp);
         assert(data || siz == 0);
@@ -930,7 +1057,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list arg)
         return errno;
     }
 
-    v_errno_t v_fopen_ap_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz)
+    v_errno_t v_fopen_ap_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz)
     {
         assert(pfp);
         assert(data || siz == 0);
@@ -946,7 +1073,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list arg)
         return errno;
     }
 
-    v_errno_t v_fopen_rb_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz)
+    v_errno_t v_fopen_rb_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz)
     {
         assert(pfp);
         assert(data || siz == 0);
@@ -962,7 +1089,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list arg)
         return errno;
     }
 
-    v_errno_t v_fopen_wb_s(v_FILE ** pfp)
+    v_errno_t v_fopen_wb_s(v_FILE **pfp)
     {
         assert(pfp);
         if (pfp)
@@ -977,7 +1104,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list arg)
         return errno;
     }
 
-    v_errno_t v_fopen_ab_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz)
+    v_errno_t v_fopen_ab_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz)
     {
         assert(pfp);
         assert(data || siz == 0);
@@ -993,7 +1120,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list arg)
         return errno;
     }
 
-    v_errno_t v_fopen_rpb_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz)
+    v_errno_t v_fopen_rpb_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz)
     {
         assert(pfp);
         assert(data || siz == 0);
@@ -1009,7 +1136,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list arg)
         return errno;
     }
 
-    v_errno_t v_fopen_apb_s(v_FILE ** pfp, v_LPCVOID data, v_fpos_t siz)
+    v_errno_t v_fopen_apb_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz)
     {
         assert(pfp);
         assert(data || siz == 0);
