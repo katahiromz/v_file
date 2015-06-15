@@ -20,22 +20,12 @@ become virtual file operations on memory, as follows:
     fwrite             | v_fwrite
     fgetc              | v_fgetc
     fputc              | v_fputc
-    feof               | v_feof
-    ferror             | v_ferror
-    clearerr           | v_clearerr
-    ftell              | v_ftell
-    fgetpos            | v_fgetpos
-    fsetpos            | v_fsetpos
-    rewind             | v_rewind
-    fseek              | v_fseek
-    ungetc             | v_ungetc
     fgets              | v_fgets
     fputs              | v_fputs
-    fscanf             | v_fscanf
-    vfscanf            | v_vfscanf
     fprintf            | v_fprintf
     vfprintf           | v_vfprintf
     fflush             | v_fflush
+    ...                | ...
     -------------------+-----------------------
 
 Just add "v_" at the beginning of each name. It's simple.
