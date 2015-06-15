@@ -915,7 +915,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
             assert(v_stdout);
             v_fputs(s, v_stdout);
             v_putchar('\n');
-			return (v_stdout ? 0 : -1);
+            return (v_stdout ? 0 : -1);
         }
     #endif  /* ndef V_FILE_SPEED */
 
