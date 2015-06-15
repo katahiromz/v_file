@@ -40,8 +40,8 @@ extern "C"
 /*
  * 2. Which would you choose, speed or safety?
  */
-/* #define V_FILE_SPEED */                  /* speed */
-#undef V_FILE_SPEED                         /* safety */
+/* #define V_FILE_NEED_SPEED */             /* speed */
+#undef V_FILE_NEED_SPEED                    /* safety */
 
 /*
  * 3. Would you like the secure functions?
@@ -58,8 +58,8 @@ extern "C"
 /**************************************************************************/
 /* validation */
 
-#if defined(V_FILE_SPEED) && defined(V_FILE_WANT_SECURE_LIB)
-    #error Choose either V_FILE_SPEED or V_FILE_WANT_SECURE_LIB. You lose.
+#if defined(V_FILE_NEED_SPEED) && defined(V_FILE_WANT_SECURE_LIB)
+    #error Choose either V_FILE_NEED_SPEED or V_FILE_WANT_SECURE_LIB. You lose.
 #endif
 
 /**************************************************************************/
@@ -146,24 +146,24 @@ v_fopen_intern(v_LPCVOID data, v_fpos_t index, v_fpos_t siz, int modes);
 /*
  * text mode
  */
-v_LPFILE v_fopen_r  (v_LPCVOID data, v_fpos_t siz);      /* mode "r"  */
-v_LPFILE v_fopen_w  (void);                              /* mode "w"  */
-v_LPFILE v_fopen_a  (v_LPCVOID data, v_fpos_t siz);      /* mode "a"  */
+v_LPFILE v_fopen_r  (v_LPCVOID data, v_fpos_t siz);     /* mode "r"  */
+v_LPFILE v_fopen_w  (void);                             /* mode "w"  */
+v_LPFILE v_fopen_a  (v_LPCVOID data, v_fpos_t siz);     /* mode "a"  */
 
-v_LPFILE v_fopen_rp (v_LPCVOID data, v_fpos_t siz);      /* mode "r+" */
-#define  v_fopen_wp v_fopen_rp                           /* mode "w+" */
-v_LPFILE v_fopen_ap (v_LPCVOID data, v_fpos_t siz);      /* mode "a+" */
+v_LPFILE v_fopen_rp (v_LPCVOID data, v_fpos_t siz);     /* mode "r+" */
+#define  v_fopen_wp v_fopen_rp                          /* mode "w+" */
+v_LPFILE v_fopen_ap (v_LPCVOID data, v_fpos_t siz);     /* mode "a+" */
 
 /*
  * binary mode
  */
-v_LPFILE v_fopen_rb (v_LPCVOID data, v_fpos_t siz);      /* mode "rb" */
-v_LPFILE v_fopen_wb (void);                              /* mode "wb" */
-v_LPFILE v_fopen_ab (v_LPCVOID data, v_fpos_t siz);      /* mode "ab" */
+v_LPFILE v_fopen_rb (v_LPCVOID data, v_fpos_t siz);     /* mode "rb" */
+v_LPFILE v_fopen_wb (void);                             /* mode "w"  */
+v_LPFILE v_fopen_ab (v_LPCVOID data, v_fpos_t siz);     /* mode "ab" */
 
-v_LPFILE v_fopen_rpb(v_LPCVOID data, v_fpos_t siz);      /* mode "r+b" */
-#define  v_fopen_wpb v_fopen_rpb                         /* mode "w+b" */
-v_LPFILE v_fopen_apb(v_LPCVOID data, v_fpos_t siz);      /* mode "a+b" */
+v_LPFILE v_fopen_rpb(v_LPCVOID data, v_fpos_t siz);     /* mode "r+b" */
+#define  v_fopen_wpb v_fopen_wb                         /* mode "w+b" */
+v_LPFILE v_fopen_apb(v_LPCVOID data, v_fpos_t siz);     /* mode "a+b" */
 
 #define v_tmpfile v_fopen_wpb
 
@@ -176,12 +176,12 @@ v_LPCHAR    v_fclose_detach(v_LPFILE fp);       /* won't free fp->data */
 /**************************************************************************/
 /* loading from real file / saving to real file */
 
-v_LPFILE v_fload_from_real(v_LPCSTR fname);
-int v_fsave_to_real(v_LPFILE v_fp, v_LPCSTR fname);
+v_LPFILE v_fopen(v_LPCSTR fname, v_LPCSTR modes);
+int v_fsave(v_LPFILE v_fp, v_LPCSTR fname);
 
 #ifdef _WIN32
-    v_LPFILE v_wfload_from_real(v_LPCWSTR fname);
-    int v_wfsave_to_real(v_LPFILE v_fp, v_LPCWSTR fname);
+    v_LPFILE v_wfopen(v_LPCWSTR fname, v_LPCWSTR modes);
+    int v_wfsave(v_LPFILE v_fp, v_LPCWSTR fname);
 #endif
 
 /**************************************************************************/
@@ -247,7 +247,7 @@ int v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list va);
 /**************************************************************************/
 /* flush */
 
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
     int v_fflush(v_LPFILE fp);
 #else
     #define v_fflush(fp)
@@ -281,7 +281,7 @@ int v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list va);
     /* destroy the v_file standard I/O */
     void v_file_destroy_stdio(void);
 
-    #ifdef V_FILE_SPEED
+    #ifdef V_FILE_NEED_SPEED
         #define v_getchar()     v_fgetc(v_stdin)
         #define v_putchar(c)    v_fputc((c), v_stdout);
         #define v_gets(s)       v_fgets((s), v_FILE_MAX_BUFFER, v_stdin);
@@ -305,7 +305,7 @@ int v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list va);
 
 /**************************************************************************/
 
-#ifdef V_FILE_SPEED
+#ifdef V_FILE_NEED_SPEED
     #define v_fopen_r(data, siz) \
         v_fopen_intern((data), 0, (siz), v_FMODE_READ | v_FMODE_TEXT)
     #define v_fopen_a(data, siz) \
@@ -322,7 +322,7 @@ int v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list va);
         v_fopen_intern((data), 0, (siz), v_FMODE_READWRITE | v_FMODE_BINARY)
     #define v_fopen_apb(data, siz) \
         v_fopen_intern((data), (siz), (siz), v_FMODE_APPEND | v_FMODE_BINARY)
-#endif  /* def V_FILE_SPEED */
+#endif  /* def V_FILE_NEED_SPEED */
 
 /**************************************************************************/
 /* secure functions */

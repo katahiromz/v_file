@@ -40,7 +40,7 @@ v_fopen_intern(v_LPCVOID data, v_fpos_t index, v_fpos_t siz, int modes)
 {
     v_LPFILE fp;
 
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
     /* check parameters */
     assert(data || siz == 0);
     if (data == NULL && siz != 0)
@@ -73,7 +73,7 @@ v_fopen_intern(v_LPCVOID data, v_fpos_t index, v_fpos_t siz, int modes)
     return fp;
 }
 
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
     v_LPFILE v_fopen_r(v_LPCVOID data, v_fpos_t siz)
     {
         return v_fopen_intern(data, 0, siz, v_FMODE_READ | v_FMODE_TEXT);
@@ -113,7 +113,7 @@ v_fopen_intern(v_LPCVOID data, v_fpos_t index, v_fpos_t siz, int modes)
     {
         return v_fopen_intern(data, siz, siz, v_FMODE_APPEND | v_FMODE_BINARY);
     }
-#endif  /* ndef V_FILE_SPEED */
+#endif  /* ndef V_FILE_NEED_SPEED */
 
 v_LPFILE v_fopen_w(void)
 {
@@ -170,15 +170,53 @@ v_LPCHAR v_fclose_detach(v_LPFILE fp)
 /**************************************************************************/
 /* loading from real file / saving to real file */
 
-v_LPFILE v_fload_from_real(v_LPCSTR fname)
+v_LPFILE v_fopen(v_LPCSTR fname, v_LPCSTR modes)
 {
     FILE *fp;
     int n;
     char buf[v_FILE_MAX_BUFFER];
     v_LPFILE v_fp = NULL;
+    int m;
 
+#ifndef V_FILE_NEED_SPEED
+    /* check parameters */
     assert(fname);
-    fp = fopen(fname, "rb");
+    if (fname == NULL)
+        return NULL;
+    assert(modes);
+    if (modes == NULL)
+        return NULL;
+#endif
+
+    m = 0;
+    if (strchr(modes, 'r'))
+        m |= v_FMODE_READ;
+    if (strchr(modes, 'w'))
+        m |= v_FMODE_WRITE;
+    if (strchr(modes, 'a'))
+        m |= v_FMODE_APPEND;
+    if (strchr(modes, '+'))
+        m |= v_FMODE_READWRITE;
+    if (strchr(modes, 'b'))
+        m |= v_FMODE_BINARY;
+
+    if ((m & v_FMODE_READWRITE) == v_FMODE_WRITE)
+        return v_fopen_w();
+
+    if (m & v_FMODE_BINARY)
+    {
+        if ((m & v_FMODE_READWRITE) == v_FMODE_READWRITE)
+            fp = fopen(fname, "r+b");
+        else
+            fp = fopen(fname, "rb");
+    }
+    else
+    {
+        if ((m & v_FMODE_READWRITE) == v_FMODE_READWRITE)
+            fp = fopen(fname, "r+");
+        else
+            fp = fopen(fname, "r");
+    }
     assert(fp);
     if (fp)
     {
@@ -199,14 +237,21 @@ v_LPFILE v_fload_from_real(v_LPCSTR fname)
                     return NULL;
                 }
             }
-            v_fp->index = 0;
+            if ((m & v_FMODE_APPEND) == v_FMODE_APPEND)
+            {
+                v_fp->index = v_fp->size;
+            }
+            else
+            {
+                v_fp->index = 0;
+            }
         }
         fclose(fp);
     }
     return v_fp;
 }
 
-int v_fsave_to_real(v_LPFILE v_fp, v_LPCSTR fname)
+int v_fsave(v_LPFILE v_fp, v_LPCSTR fname)
 {
     FILE *fp;
     int ret = v_EOF;
@@ -224,15 +269,53 @@ int v_fsave_to_real(v_LPFILE v_fp, v_LPCSTR fname)
 }
 
 #ifdef _WIN32
-    v_LPFILE v_wfload_from_real(v_LPCWSTR fname)
+    v_LPFILE v_wfopen(v_LPCWSTR fname, v_LPCWSTR modes)
     {
         FILE *fp;
         int n;
         char buf[v_FILE_MAX_BUFFER];
         v_LPFILE v_fp = NULL;
+        int m;
 
+#ifndef V_FILE_NEED_SPEED
+        /* check parameters */
         assert(fname);
-        fp = _wfopen(fname, L"rb");
+        if (fname == NULL)
+            return NULL;
+        assert(modes);
+        if (modes == NULL)
+            return NULL;
+#endif
+
+        m = 0;
+        if (wcschr(modes, L'r'))
+            m |= v_FMODE_READ;
+        if (wcschr(modes, L'w'))
+            m |= v_FMODE_WRITE;
+        if (wcschr(modes, L'a'))
+            m |= v_FMODE_APPEND;
+        if (wcschr(modes, L'+'))
+            m |= v_FMODE_READWRITE;
+        if (wcschr(modes, L'b'))
+            m |= v_FMODE_BINARY;
+
+        if ((m & v_FMODE_READWRITE) == v_FMODE_WRITE)
+            return v_fopen_w();
+
+        if (m & v_FMODE_BINARY)
+        {
+            if ((m & v_FMODE_READWRITE) == v_FMODE_READWRITE)
+                fp = _wfopen(fname, L"r+b");
+            else
+                fp = _wfopen(fname, L"rb");
+        }
+        else
+        {
+            if ((m & v_FMODE_READWRITE) == v_FMODE_READWRITE)
+                fp = _wfopen(fname, L"r+");
+            else
+                fp = _wfopen(fname, L"r");
+        }
         assert(fp);
         if (fp)
         {
@@ -253,14 +336,21 @@ int v_fsave_to_real(v_LPFILE v_fp, v_LPCSTR fname)
                         return NULL;
                     }
                 }
-                v_fp->index = 0;
+                if ((m & v_FMODE_APPEND) == v_FMODE_APPEND)
+                {
+                    v_fp->index = v_fp->size;
+                }
+                else
+                {
+                    v_fp->index = 0;
+                }
             }
             fclose(fp);
         }
         return v_fp;
     }
 
-    int v_wfsave_to_real(v_LPFILE v_fp, v_LPCWSTR fname)
+    int v_wfsave(v_LPFILE v_fp, v_LPCWSTR fname)
     {
         FILE *fp;
         int ret = v_EOF;
@@ -286,7 +376,7 @@ int v_fread_raw(v_LPVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp)
     v_fpos_t count, read_size;
     v_LPCHAR pch;
 
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
     /* check parameters */
     assert(fp);
     if (v_ferror(fp))
@@ -325,7 +415,7 @@ int v_fwrite_raw(v_LPCVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp)
     v_fpos_t increment, end;
     v_LPCHAR pch;
 
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
     /* check parameters */
     assert(fp);
     if (v_ferror(fp))
@@ -372,7 +462,7 @@ int v_fgetc(v_LPFILE fp)
 {
     int ch;
 
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
     /* check parameter */
     assert(fp);
     /* check status */
@@ -406,7 +496,7 @@ int v_fgetc(v_LPFILE fp)
 
 int v_fputc(char c, v_LPFILE fp)
 {
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
     /* check parameter */
     assert(fp);
     if (fp == NULL)
@@ -442,7 +532,7 @@ int v_fread(v_LPVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp)
     v_fpos_t i, count;
 #endif
 
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
     /* check parameters */
     assert(fp);
     if (fp == NULL)
@@ -489,7 +579,7 @@ int v_fwrite(v_LPCVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp)
     v_fpos_t i, count;
 #endif
 
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
     /* check parameters */
     assert(fp);
     if (fp == NULL)
@@ -549,7 +639,7 @@ int v_ferror(v_LPFILE fp)
 void v_clearerr(v_LPFILE fp)
 {
     assert(fp);
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
     if (fp == NULL)
         return;
 #endif
@@ -561,7 +651,7 @@ void v_clearerr(v_LPFILE fp)
 
 long v_ftell(v_LPFILE fp)
 {
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
     assert(fp);
     if (fp)
     {
@@ -575,7 +665,7 @@ long v_ftell(v_LPFILE fp)
 
 int v_fgetpos(v_LPFILE fp, v_fpos_t *pos)
 {
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
     assert(fp);
     assert(pos);
     if (fp && pos)
@@ -592,7 +682,7 @@ int v_fgetpos(v_LPFILE fp, v_fpos_t *pos)
 
 int v_fsetpos(v_LPFILE fp, const v_fpos_t *pos)
 {
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
     assert(fp);
     assert(pos);
     if (fp && pos)
@@ -609,7 +699,7 @@ int v_fsetpos(v_LPFILE fp, const v_fpos_t *pos)
 
 void v_rewind(v_LPFILE fp)
 {
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
     assert(fp);
     if (fp)
     {
@@ -622,7 +712,7 @@ void v_rewind(v_LPFILE fp)
 
 int v_fseek(v_LPFILE fp, long offset, int type)
 {
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
     assert(fp);
     if (fp == NULL)
         return v_EOF;
@@ -676,7 +766,7 @@ int v_fseek(v_LPFILE fp, long offset, int type)
 
 int v_ungetc(char c, v_LPFILE fp)
 {
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
     assert(fp);
     if (fp == NULL)
         return v_EOF;
@@ -715,7 +805,7 @@ v_LPSTR v_fgets(v_LPSTR s, int n, v_LPFILE fp)
     int i;
     char ch;
 
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
     /* check parameters */
     if (n == 0)
         return NULL;
@@ -767,7 +857,7 @@ int v_fputs(v_LPCSTR s, v_LPFILE fp)
 {
     size_t len;
 
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
     /* check parameters */
     assert(s && fp);
     if (s == NULL || fp == NULL)
@@ -813,7 +903,7 @@ int v_fscanf(v_LPFILE fp, v_LPCSTR format, ...)
     va_list va;
     int ret;
 
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
     /* check parameters */
     assert(fp && format);
     if (fp == NULL || format == NULL)
@@ -831,7 +921,7 @@ int v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list va)
 {
     char buf[v_FILE_MAX_BUFFER];
 
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
     /* check parameters */
     assert(fp && format);
     if (fp == NULL || format == NULL)
@@ -855,7 +945,7 @@ int v_fprintf(v_LPFILE fp, v_LPCSTR format, ...)
     va_list va;
     int n;
 
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
     /* check parameters */
     assert(fp && format);
     if (fp == NULL || format == NULL)
@@ -875,7 +965,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
     char buf[v_FILE_MAX_BUFFER];
     size_t len;
 
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
     /* check parameters */
     assert(fp && format);
     if (fp == NULL || format == NULL)
@@ -903,7 +993,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
 /**************************************************************************/
 /* flush */
 
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
     int v_fflush(v_LPFILE fp)
     {
         /* NOTE: v_fflush does nothing */
@@ -994,7 +1084,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
     void v_file_init_stdio_2(v_LPCSTR input_file_name)
     {
         if (input_file_name)
-            v_stdin = v_fload_from_real(input_file_name);
+            v_stdin = v_fopen(input_file_name, "rb");
         else
             v_stdin = v_fopen_rb(NULL, 0);
         v_stdout = v_fopen_wb();
@@ -1012,7 +1102,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
         v_stderr = NULL;
     }
 
-    #ifndef V_FILE_SPEED
+    #ifndef V_FILE_NEED_SPEED
         int v_getchar(void)
         {
             assert(v_stdin);
@@ -1038,14 +1128,14 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
             v_putchar('\n');
             return (v_stdout ? 0 : -1);
         }
-    #endif  /* ndef V_FILE_SPEED */
+    #endif  /* ndef V_FILE_NEED_SPEED */
 
     int v_printf(v_LPCSTR format, ...)
     {
         va_list va;
         int n;
 
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
         /* check parameters */
         assert(v_stdout && format);
         if (v_stdout == NULL || format == NULL)
@@ -1063,7 +1153,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
     {
         int n;
 
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
         /* check parameters */
         assert(v_stdout && format);
         if (v_stdout == NULL || format == NULL)
@@ -1079,7 +1169,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
         va_list va;
         int ret;
 
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
         /* check parameters */
         assert(v_stdin && format);
         if (v_stdin == NULL || format == NULL)
@@ -1097,7 +1187,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
     {
         char buf[v_FILE_MAX_BUFFER];
 
-#ifndef V_FILE_SPEED
+#ifndef V_FILE_NEED_SPEED
         /* check parameters */
         assert(v_stdin && format);
         if (v_stdin == NULL || format == NULL)
