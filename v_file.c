@@ -170,7 +170,7 @@ v_LPCHAR v_fclose_detach(v_LPFILE fp)
 /**************************************************************************/
 /* loading from real file / saving to real file */
 
-v_LPFILE v_fload_from_real(const char *fname)
+v_LPFILE v_fload_from_real(v_LPCSTR fname)
 {
     FILE *fp;
     int n;
@@ -206,8 +206,25 @@ v_LPFILE v_fload_from_real(const char *fname)
     return v_fp;
 }
 
+int v_fsave_to_real(v_LPFILE v_fp, v_LPCSTR fname)
+{
+    FILE *fp;
+    int ret = v_EOF;
+
+    assert(fname);
+    fp = fopen(fname, "wb");
+    assert(fp);
+    if (fp)
+    {
+        if (fwrite(v_fp->data, v_fp->size, 1, fp))
+            ret = 0;
+        fclose(fp);
+    }
+    return ret;
+}
+
 #ifdef _WIN32
-    v_LPFILE v_wfload_from_real(const wchar_t *fname)
+    v_LPFILE v_wfload_from_real(v_LPCWSTR fname)
     {
         FILE *fp;
         int n;
@@ -242,27 +259,8 @@ v_LPFILE v_fload_from_real(const char *fname)
         }
         return v_fp;
     }
-#endif  /* def _WIN32 */
 
-int v_fsave_to_real(v_LPFILE v_fp, const char *fname)
-{
-    FILE *fp;
-    int ret = v_EOF;
-
-    assert(fname);
-    fp = fopen(fname, "wb");
-    assert(fp);
-    if (fp)
-    {
-        if (fwrite(v_fp->data, v_fp->size, 1, fp))
-            ret = 0;
-        fclose(fp);
-    }
-    return ret;
-}
-
-#ifdef _WIN32
-    int v_wfsave_to_real(v_LPFILE v_fp, const wchar_t *fname)
+    int v_wfsave_to_real(v_LPFILE v_fp, v_LPCWSTR fname)
     {
         FILE *fp;
         int ret = v_EOF;
@@ -993,7 +991,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
         v_stderr = v_fopen_wb();
     }
 
-    void v_file_init_stdio_2(LPCSTR input_file_name)
+    void v_file_init_stdio_2(v_LPCSTR input_file_name)
     {
         if (input_file_name)
             v_stdin = v_fload_from_real(input_file_name);
