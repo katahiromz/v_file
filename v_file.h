@@ -40,14 +40,14 @@ extern "C"
 /*
  * 2. Which would you choose, speed or safety?
  */
-/* #define V_FILE_SPEED */          /* speed */
-#undef V_FILE_SPEED                 /* safety */
+/* #define V_FILE_SPEED */                  /* speed */
+#undef V_FILE_SPEED                         /* safety */
 
 /*
  * 3. Would you like the secure functions?
  */
-/* #define __V_FILE_WANT_SECURE_LIB__ */    /* Yes */
-#undef __V_FILE_WANT_SECURE_LIB__           /* No */
+/* #define V_FILE_WANT_SECURE_LIB */        /* Yes */
+#undef V_FILE_WANT_SECURE_LIB               /* No */
 
 /*
  * 4. Would you use the v_file standard I/O?
@@ -58,8 +58,8 @@ extern "C"
 /**************************************************************************/
 /* validation */
 
-#if defined(V_FILE_SPEED) && defined(__V_FILE_WANT_SECURE_LIB__)
-    #error You lose.
+#if defined(V_FILE_SPEED) && defined(V_FILE_WANT_SECURE_LIB)
+    #error Choose either V_FILE_SPEED or V_FILE_WANT_SECURE_LIB. You lose.
 #endif
 
 /**************************************************************************/
@@ -329,7 +329,7 @@ int v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list va);
 
 typedef int v_errno_t;
 
-#ifdef __V_FILE_WANT_SECURE_LIB__
+#ifdef V_FILE_WANT_SECURE_LIB
     v_errno_t v_fopen_r_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz);
     v_errno_t v_fopen_w_s(v_FILE **pfp);
     v_errno_t v_fopen_a_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz);
@@ -353,7 +353,7 @@ typedef int v_errno_t;
     int v_vfprintf_s(v_FILE *fp, v_LPCSTR format, va_list va);
 
     v_errno_t v_clearerr_s(v_FILE *fp);
-#endif  /* def __V_FILE_WANT_SECURE_LIB__ */
+#endif  /* def V_FILE_WANT_SECURE_LIB */
 
 /**************************************************************************/
 

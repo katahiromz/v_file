@@ -1117,7 +1117,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
 /**************************************************************************/
 /* secure functions */
 
-#ifdef __V_FILE_WANT_SECURE_LIB__
+#ifdef V_FILE_WANT_SECURE_LIB
     v_errno_t v_fopen_r_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz)
     {
         assert(pfp);
@@ -1352,7 +1352,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
         }
         return n;
     }
-#endif  /* def __V_FILE_WANT_SECURE_LIB__ */
+#endif  /* def V_FILE_WANT_SECURE_LIB */
 
 /**************************************************************************/
 /* C/C++ switching */
