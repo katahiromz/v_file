@@ -997,8 +997,8 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
             v_stdin = v_fload_from_real(input_file_name);
         else
             v_stdin = v_fopen_rb(NULL, 0);
-        v_stdout = v_fopen_w();
-        v_stderr = v_fopen_w();
+        v_stdout = v_fopen_wb();
+        v_stderr = v_fopen_wb();
     }
 
     /* destroy the v_file standard I/O */
