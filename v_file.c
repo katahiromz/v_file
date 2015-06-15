@@ -251,7 +251,7 @@ v_LPFILE v_fopen(v_LPCSTR fname, v_LPCSTR modes)
     return v_fp;
 }
 
-int v_fsave(v_LPFILE v_fp, v_LPCSTR fname)
+int v_fsave(v_LPCSTR fname, v_LPFILE v_fp)
 {
     FILE *fp;
     int ret = v_EOF;
@@ -263,7 +263,7 @@ int v_fsave(v_LPFILE v_fp, v_LPCSTR fname)
     {
         if (fwrite(v_fp->data, v_fp->size, 1, fp))
             ret = 0;
-        fclose(fp);
+        ret |= fclose(fp);
     }
     return ret;
 }
@@ -350,7 +350,7 @@ int v_fsave(v_LPFILE v_fp, v_LPCSTR fname)
         return v_fp;
     }
 
-    int v_wfsave(v_LPFILE v_fp, v_LPCWSTR fname)
+    int v_wfsave(v_LPCWSTR fname, v_LPFILE v_fp)
     {
         FILE *fp;
         int ret = v_EOF;
@@ -362,7 +362,7 @@ int v_fsave(v_LPFILE v_fp, v_LPCSTR fname)
         {
             if (fwrite(v_fp->data, v_fp->size, 1, fp))
                 ret = 0;
-            fclose(fp);
+            ret |= fclose(fp);
         }
         return ret;
     }

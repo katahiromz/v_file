@@ -177,11 +177,11 @@ v_LPCHAR    v_fclose_detach(v_LPFILE fp);       /* won't free fp->data */
 /* loading from real file / saving to real file */
 
 v_LPFILE v_fopen(v_LPCSTR fname, v_LPCSTR modes);
-int v_fsave(v_LPFILE v_fp, v_LPCSTR fname);
+int v_fsave(v_LPCSTR fname, v_LPFILE v_fp);
 
 #ifdef _WIN32
     v_LPFILE v_wfopen(v_LPCWSTR fname, v_LPCWSTR modes);
-    int v_wfsave(v_LPFILE v_fp, v_LPCWSTR fname);
+    int v_wfsave(v_LPCWSTR fname, v_LPFILE v_fp);
 #endif
 
 /**************************************************************************/
