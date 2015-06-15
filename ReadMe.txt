@@ -33,10 +33,11 @@ Just add "v_" at the beginning of each name. It's simple.
 The v_fopen_* functions store the specified data into 
 the v_FILE structure, if any; and set the file position.
 
-If you wanna use "the v_file standard I/O", you have to 
-call v_file_init_stdio and v_file_destroy_stdio.
+If you wanna use "the v_file standard I/O" (v_stdio or 
+v_printf etc.), you have to call v_file_init_stdio and 
+v_file_destroy_stdio.
 
-See source.
+See source for details.
 
 /////////////////////////////////////////////////////
 // Katayama Hirofumi MZ (katahiromz) [ARMYANT]
