@@ -12,7 +12,7 @@
     #include <stdarg.h>
 #endif
 
-#if defined(_WIN32) || defined(WIN16)
+#if defined(WIN16) || defined(_WIN32)
     #ifndef _INC_WINDOWS
         #include <windows.h>
     #endif
@@ -220,13 +220,13 @@ int v_fputs(v_LPCSTR s, v_LPFILE fp);
 /* print */
 
 int v_fprintf(v_LPFILE fp, v_LPCSTR format, ...);
-int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list arg);
+int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va);
 
 /**************************************************************************/
 /* scan */
 
 int v_fscanf(v_LPFILE fp, v_LPCSTR format, ...);
-int v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list arg);
+int v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list va);
 
 /**************************************************************************/
 /* flush */
@@ -254,11 +254,14 @@ int v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list arg);
 /* the v_file standard I/O */
 
 #ifdef V_FILE_USE_STDIO
+    /* the v_file standard I/O objects */
     extern v_LPFILE v_stdin;
     extern v_LPFILE v_stdout;
     extern v_LPFILE v_stderr;
 
+    /* initialize the v_file standard I/O */
     void v_file_init_stdio(v_LPCVOID input_data, v_fpos_t input_size);
+    /* destroy the v_file standard I/O */
     void v_file_destroy_stdio(void);
 
     #ifdef V_FILE_SPEED
@@ -277,10 +280,10 @@ int v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list arg);
     #define v_fputchar v_putchar
 
     int v_printf(v_LPCSTR format, ...);
-    int v_vprintf(v_LPCSTR format, va_list arg);
+    int v_vprintf(v_LPCSTR format, va_list va);
 
     int v_scanf(v_LPFILE fp, v_LPCSTR format, ...);
-    int v_vscanf(v_LPFILE fp, v_LPCSTR format, va_list arg);
+    int v_vscanf(v_LPFILE fp, v_LPCSTR format, va_list va);
 #endif  /* def V_FILE_USE_STDIO */
 
 /**************************************************************************/

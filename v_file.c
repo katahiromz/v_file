@@ -716,7 +716,7 @@ int v_fscanf(v_LPFILE fp, v_LPCSTR format, ...)
     return ret;
 }
 
-int v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list arg)
+int v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list va)
 {
     char buf[v_FILE_MAX_BUFFER];
 
@@ -731,7 +731,7 @@ int v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list arg)
     if (v_fgets(buf, v_FILE_MAX_BUFFER, fp))
     {
         /* FIXME: one line only? */
-        return vsscanf(buf, format, arg);
+        return vsscanf(buf, format, va);
     }
     return v_EOF;
 }
@@ -758,7 +758,7 @@ int v_fprintf(v_LPFILE fp, v_LPCSTR format, ...)
     return n;
 }
 
-int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list arg)
+int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
 {
     int n;
     char buf[v_FILE_MAX_BUFFER];
@@ -771,7 +771,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list arg)
         return v_EOF;
 #endif
 
-    n = vsprintf(buf, format, arg);
+    n = vsprintf(buf, format, va);
     len = strlen(buf);
     assert(len < v_FILE_MAX_BUFFER);
 
@@ -867,10 +867,12 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list arg)
 /* the v_file standard I/O */
 
 #ifdef V_FILE_USE_STDIO
+    /* the v_file standard I/O objects */
     v_LPFILE v_stdin = NULL;
     v_LPFILE v_stdout = NULL;
     v_LPFILE v_stderr = NULL;
 
+    /* initialize the v_file standard I/O */
     void v_file_init_stdio(v_LPCVOID input_data, v_fpos_t input_size)
     {
         v_stdin = v_fopen_r(input_data, input_size);
@@ -878,6 +880,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list arg)
         v_stderr = v_fopen_w();
     }
 
+    /* destroy the v_file standard I/O */
     void v_file_destroy_stdio(void)
     {
         v_fclose(v_stdin);
@@ -935,7 +938,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list arg)
         return n;
     }
 
-    int v_vprintf(v_LPCSTR format, va_list arg)
+    int v_vprintf(v_LPCSTR format, va_list va)
     {
         int n;
 
@@ -946,7 +949,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list arg)
             return v_EOF;
 #endif
 
-        n = v_vfprintf(v_stdout, format, arg);
+        n = v_vfprintf(v_stdout, format, va);
         return n;
     }
 
@@ -969,7 +972,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list arg)
         return ret;
     }
 
-    int v_vscanf(v_LPFILE fp, v_LPCSTR format, va_list arg)
+    int v_vscanf(v_LPFILE fp, v_LPCSTR format, va_list va)
     {
         char buf[v_FILE_MAX_BUFFER];
 
@@ -984,7 +987,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list arg)
         if (v_fgets(buf, v_FILE_MAX_BUFFER, v_stdin))
         {
             /* FIXME: one line only? */
-            return vsscanf(buf, format, arg);
+            return vsscanf(buf, format, va);
         }
         return v_EOF;
     }
