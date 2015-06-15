@@ -169,6 +169,17 @@ int         v_fclose(v_LPFILE fp);              /* will free fp->data  */
 v_LPCHAR    v_fclose_detach(v_LPFILE fp);       /* won't free fp->data */
 
 /**************************************************************************/
+/* loading from real file / saving to real file */
+
+v_LPFILE v_fload_from_real(const char *fname);
+int v_fsave_to_real(v_LPFILE v_fp, const char *fname);
+
+#ifdef _WIN32
+    v_LPFILE v_wfload_from_real(const wchar_t *fname);
+    int v_wfsave_to_real(v_LPFILE v_fp, const wchar_t *fname);
+#endif
+
+/**************************************************************************/
 /* binary transfer */
 
 int v_fread_raw(v_LPVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp);
@@ -261,6 +272,7 @@ int v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list va);
 
     /* initialize the v_file standard I/O */
     void v_file_init_stdio(v_LPCVOID input_data, v_fpos_t input_size);
+    void v_file_init_stdio_2(LPCSTR input_file_name);
     /* destroy the v_file standard I/O */
     void v_file_destroy_stdio(void);
 

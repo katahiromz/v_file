@@ -168,6 +168,119 @@ v_LPCHAR v_fclose_detach(v_LPFILE fp)
 }
 
 /**************************************************************************/
+/* loading from real file / saving to real file */
+
+v_LPFILE v_fload_from_real(const char *fname)
+{
+    FILE *fp;
+    int n;
+    char buf[v_FILE_MAX_BUFFER];
+    v_LPFILE v_fp = NULL;
+
+    assert(fname);
+    fp = fopen(fname, "rb");
+    assert(fp);
+    if (fp)
+    {
+        v_fp = v_fopen_wb();
+        assert(v_fp);
+        if (v_fp)
+        {
+            for (;;)
+            {
+                n = fread(buf, 1, v_FILE_MAX_BUFFER, fp);
+                if (n == 0)
+                    break;
+
+                if (v_fwrite_raw(buf, 1, n, v_fp) != n)
+                {
+                    fclose(fp);
+                    v_fclose(v_fp);
+                    return NULL;
+                }
+            }
+            v_fp->index = 0;
+        }
+        fclose(fp);
+    }
+    return v_fp;
+}
+
+#ifdef _WIN32
+    v_LPFILE v_wfload_from_real(const wchar_t *fname)
+    {
+        FILE *fp;
+        int n;
+        char buf[v_FILE_MAX_BUFFER];
+        v_LPFILE v_fp = NULL;
+
+        assert(fname);
+        fp = _wfopen(fname, L"rb");
+        assert(fp);
+        if (fp)
+        {
+            v_fp = v_fopen_wb();
+            assert(v_fp);
+            if (v_fp)
+            {
+                for (;;)
+                {
+                    n = fread(buf, 1, v_FILE_MAX_BUFFER, fp);
+                    if (n == 0)
+                        break;
+
+                    if (v_fwrite_raw(buf, 1, n, v_fp) != n)
+                    {
+                        fclose(fp);
+                        v_fclose(v_fp);
+                        return NULL;
+                    }
+                }
+                v_fp->index = 0;
+            }
+            fclose(fp);
+        }
+        return v_fp;
+    }
+#endif  /* def _WIN32 */
+
+int v_fsave_to_real(v_LPFILE v_fp, const char *fname)
+{
+    FILE *fp;
+    int ret = v_EOF;
+
+    assert(fname);
+    fp = fopen(fname, "wb");
+    assert(fp);
+    if (fp)
+    {
+        if (fwrite(v_fp->data, v_fp->size, 1, fp))
+            ret = 0;
+        fclose(fp);
+    }
+    return ret;
+}
+
+#ifdef _WIN32
+    int v_wfsave_to_real(v_LPFILE v_fp, const wchar_t *fname)
+    {
+        FILE *fp;
+        int ret = v_EOF;
+
+        assert(fname);
+        fp = _wfopen(fname, L"wb");
+        assert(fp);
+        if (fp)
+        {
+            if (fwrite(v_fp->data, v_fp->size, 1, fp))
+                ret = 0;
+            fclose(fp);
+        }
+        return ret;
+    }
+#endif  /* def _WIN32 */
+
+/**************************************************************************/
 /* binary transfer */
 
 int v_fread_raw(v_LPVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp)
@@ -875,7 +988,17 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
     /* initialize the v_file standard I/O */
     void v_file_init_stdio(v_LPCVOID input_data, v_fpos_t input_size)
     {
-        v_stdin = v_fopen_r(input_data, input_size);
+        v_stdin = v_fopen_rb(input_data, input_size);
+        v_stdout = v_fopen_wb();
+        v_stderr = v_fopen_wb();
+    }
+
+    void v_file_init_stdio_2(LPCSTR input_file_name)
+    {
+        if (input_file_name)
+            v_stdin = v_fload_from_real(input_file_name);
+        else
+            v_stdin = v_fopen_rb(NULL, 0);
         v_stdout = v_fopen_w();
         v_stderr = v_fopen_w();
     }
