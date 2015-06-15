@@ -117,8 +117,8 @@ typedef unsigned long v_fpos_t;
 #endif
 
 #ifdef _WIN32
-    typedef       wchar_t *         v_LPWSTR;
-    typedef const wchar_t *         v_LPCWSTR;
+    typedef       wchar_t *     v_LPWSTR;
+    typedef const wchar_t *     v_LPCWSTR;
 #endif
 
 /* virtual "FILE" structure */
