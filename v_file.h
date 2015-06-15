@@ -66,9 +66,9 @@ extern "C"
 /* constants */
 
 /* virtual "SEEK_*" values */
-#define v_SEEK_CUR  1
-#define v_SEEK_END  2
-#define v_SEEK_SET  0
+#define v_SEEK_CUR          1
+#define v_SEEK_END          2
+#define v_SEEK_SET          0
 
 /* virtual file modes */
 #define v_FMODE_ERROR       1   /* is there any error? */
@@ -87,7 +87,7 @@ extern "C"
 #endif
 
 /* virtual end of file (EOF) */
-#define v_EOF (-1)
+#define v_EOF               (-1)
 
 /**************************************************************************/
 /* types */
@@ -140,6 +140,9 @@ typedef struct v_FILE
 /**************************************************************************/
 /* opening / closing */
 
+/*
+ * the internal function (don't use directly)
+ */
 v_LPFILE 
 v_fopen_intern(v_LPCVOID data, v_fpos_t index, v_fpos_t siz, int modes);
 
@@ -176,12 +179,12 @@ v_LPCHAR    v_fclose_detach(v_LPFILE fp);       /* won't free fp->data */
 /**************************************************************************/
 /* loading from real file / saving to real file */
 
-v_LPFILE v_fopen(v_LPCSTR fname, v_LPCSTR modes);
-int v_fsave(v_LPCSTR fname, v_LPFILE v_fp);
+v_LPFILE        v_fopen(v_LPCSTR fname, v_LPCSTR modes);
+int             v_fsave(v_LPCSTR fname, v_LPFILE v_fp);
 
 #ifdef _WIN32
-    v_LPFILE v_wfopen(v_LPCWSTR fname, v_LPCWSTR modes);
-    int v_wfsave(v_LPCWSTR fname, v_LPFILE v_fp);
+    v_LPFILE    v_wfopen(v_LPCWSTR fname, v_LPCWSTR modes);
+    int         v_wfsave(v_LPCWSTR fname, v_LPFILE v_fp);
 #endif
 
 /**************************************************************************/
@@ -208,41 +211,41 @@ int v_fputc(char c, v_LPFILE fp);
 /**************************************************************************/
 /* file status */
 
-int v_feof(v_LPFILE fp);
-int v_ferror(v_LPFILE fp);
-void v_clearerr(v_LPFILE fp);
+int     v_feof(v_LPFILE fp);
+int     v_ferror(v_LPFILE fp);
+void    v_clearerr(v_LPFILE fp);
 
 /**************************************************************************/
 /* file position */
 
-long v_ftell(v_LPFILE fp);
-int v_fgetpos(v_LPFILE fp, v_fpos_t *pos);
-int v_fsetpos(v_LPFILE fp, const v_fpos_t *pos);
-void v_rewind(v_LPFILE fp);
-int v_fseek(v_LPFILE fp, long offset, int type);
+long    v_ftell(v_LPFILE fp);
+int     v_fgetpos(v_LPFILE fp, v_fpos_t *pos);
+int     v_fsetpos(v_LPFILE fp, const v_fpos_t *pos);
+void    v_rewind(v_LPFILE fp);
+int     v_fseek(v_LPFILE fp, long offset, int type);
 
 /**************************************************************************/
 /* unget a character */
 
-int v_ungetc(char c, v_LPFILE fp);
+int     v_ungetc(char c, v_LPFILE fp);
 
 /**************************************************************************/
 /* read / write string */
 
 v_LPSTR v_fgets(v_LPSTR s, int n, v_LPFILE fp);
-int v_fputs(v_LPCSTR s, v_LPFILE fp);
+int     v_fputs(v_LPCSTR s, v_LPFILE fp);
 
 /**************************************************************************/
 /* print */
 
-int v_fprintf(v_LPFILE fp, v_LPCSTR format, ...);
-int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va);
+int     v_fprintf(v_LPFILE fp, v_LPCSTR format, ...);
+int     v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va);
 
 /**************************************************************************/
 /* scan */
 
-int v_fscanf(v_LPFILE fp, v_LPCSTR format, ...);
-int v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list va);
+int     v_fscanf(v_LPFILE fp, v_LPCSTR format, ...);
+int     v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list va);
 
 /**************************************************************************/
 /* flush */
@@ -258,12 +261,12 @@ int v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list va);
 
 #ifdef WIN16
     /* opening old 16-bit Windows .exe resource as virtual file */
-    v_LPFILE v_fopen_res16(HMODULE hMod, v_LPCSTR res_id, v_LPCSTR type);
+    v_LPFILE    v_fopen_res16(HMODULE hMod, v_LPCSTR res_id, v_LPCSTR type);
 #endif
 
 #ifdef _WIN32
     /* opening Windows .exe resource as virtual file */
-    v_LPFILE v_fopen_res(HMODULE hMod, LPCTSTR res_id, LPCTSTR type);
+    v_LPFILE    v_fopen_res(HMODULE hMod, LPCTSTR res_id, LPCTSTR type);
 #endif
 
 /**************************************************************************/
@@ -296,11 +299,11 @@ int v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list va);
     #define v_fgetchar v_getchar
     #define v_fputchar v_putchar
 
-    int v_printf(v_LPCSTR format, ...);
-    int v_vprintf(v_LPCSTR format, va_list va);
+    int v_printf    (v_LPCSTR format, ...);
+    int v_vprintf   (v_LPCSTR format, va_list va);
 
-    int v_scanf(v_LPFILE fp, v_LPCSTR format, ...);
-    int v_vscanf(v_LPFILE fp, v_LPCSTR format, va_list va);
+    int v_scanf     (v_LPFILE fp, v_LPCSTR format, ...);
+    int v_vscanf    (v_LPFILE fp, v_LPCSTR format, va_list va);
 #endif  /* def V_FILE_USE_STDIO */
 
 /**************************************************************************/
@@ -346,11 +349,11 @@ typedef int v_errno_t;
     #define   v_fopen_wpb_s v_fopen_rp_s
     v_errno_t v_fopen_apb_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz);
 
-    #define v_tmpfile_s v_fopen_wpb_s
+    #define   v_tmpfile_s v_fopen_wpb_s
 
-    int v_fscanf_s(v_FILE *fp, v_LPCSTR format, ...);
-    int v_fprintf_s(v_FILE *fp, v_LPCSTR format, ...);
-    int v_vfprintf_s(v_FILE *fp, v_LPCSTR format, va_list va);
+    int       v_fscanf_s(v_FILE *fp, v_LPCSTR format, ...);
+    int       v_fprintf_s(v_FILE *fp, v_LPCSTR format, ...);
+    int       v_vfprintf_s(v_FILE *fp, v_LPCSTR format, va_list va);
 
     v_errno_t v_clearerr_s(v_FILE *fp);
 #endif  /* def V_FILE_WANT_SECURE_LIB */
