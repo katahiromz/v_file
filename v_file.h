@@ -202,13 +202,13 @@ int             v_fsave (v_LPCSTR fname, v_LPFILE v_fp);
 /**************************************************************************/
 /* binary transfer */
 
-size_t v_fread_raw(v_LPVOID ptr, size_t siz, size_t nelem, v_LPFILE fp);
+size_t v_fread_raw (v_LPVOID ptr,  size_t siz, size_t nelem, v_LPFILE fp);
 size_t v_fwrite_raw(v_LPCVOID ptr, size_t siz, size_t nelem, v_LPFILE fp);
 
 /**************************************************************************/
 /* read / write buffer */
 
-size_t v_fread(v_LPVOID ptr, size_t siz, size_t nelem, v_LPFILE fp);
+size_t v_fread (v_LPVOID ptr,  size_t siz, size_t nelem, v_LPFILE fp);
 size_t v_fwrite(v_LPCVOID ptr, size_t siz, size_t nelem, v_LPFILE fp);
 
 /**************************************************************************/
@@ -294,6 +294,7 @@ int     v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list va);
     void v_file_init_stdio(
         v_LPCVOID input_data, size_t input_size, v_LPCSTR modes);
     void v_file_init_stdio_2(v_LPCSTR input_file_name, v_LPCSTR modes);
+
     /* destroy the v_file standard I/O */
     void v_file_destroy_stdio(void);
 
@@ -346,17 +347,17 @@ int     v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list va);
 typedef int v_errno_t;
 
 #ifdef V_FILE_WANT_SECURE_LIB
-    v_errno_t v_fopen_r_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz);
-    v_errno_t v_fopen_w_s(v_FILE **pfp);
-    v_errno_t v_fopen_a_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz);
+    v_errno_t v_fopen_r_s  (v_FILE **pfp, v_LPCVOID data, v_fpos_t siz);
+    v_errno_t v_fopen_w_s  (v_FILE **pfp);
+    v_errno_t v_fopen_a_s  (v_FILE **pfp, v_LPCVOID data, v_fpos_t siz);
 
-    v_errno_t v_fopen_rp_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz);
+    v_errno_t v_fopen_rp_s (v_FILE **pfp, v_LPCVOID data, v_fpos_t siz);
     #define   v_fopen_wp_s v_fopen_rp_s
-    v_errno_t v_fopen_ap_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz);
+    v_errno_t v_fopen_ap_s (v_FILE **pfp, v_LPCVOID data, v_fpos_t siz);
 
-    v_errno_t v_fopen_rb_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz);
-    v_errno_t v_fopen_wb_s(v_FILE **pfp);
-    v_errno_t v_fopen_ab_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz);
+    v_errno_t v_fopen_rb_s (v_FILE **pfp, v_LPCVOID data, v_fpos_t siz);
+    v_errno_t v_fopen_wb_s (v_FILE **pfp);
+    v_errno_t v_fopen_ab_s (v_FILE **pfp, v_LPCVOID data, v_fpos_t siz);
 
     v_errno_t v_fopen_rpb_s(v_FILE **pfp, v_LPCVOID data, v_fpos_t siz);
     #define   v_fopen_wpb_s v_fopen_rp_s
@@ -364,11 +365,11 @@ typedef int v_errno_t;
 
     #define   v_tmpfile_s v_fopen_wpb_s
 
-    int       v_fscanf_s(v_FILE *fp, v_LPCSTR format, ...);
-    int       v_fprintf_s(v_FILE *fp, v_LPCSTR format, ...);
-    int       v_vfprintf_s(v_FILE *fp, v_LPCSTR format, va_list va);
+    int       v_fscanf_s   (v_FILE *fp, v_LPCSTR format, ...);
+    int       v_fprintf_s  (v_FILE *fp, v_LPCSTR format, ...);
+    int       v_vfprintf_s (v_FILE *fp, v_LPCSTR format, va_list va);
 
-    v_errno_t v_clearerr_s(v_FILE *fp);
+    v_errno_t v_clearerr_s (v_FILE *fp);
 #endif  /* def V_FILE_WANT_SECURE_LIB */
 
 /**************************************************************************/
