@@ -72,6 +72,7 @@
 #undef GetFileSize
 #undef SetEndOfFile
 #undef SetFilePointer
+#undef _tfopen
 
 /**************************************************************************/
 /* do wrap */
@@ -138,5 +139,11 @@
 #define GetFileSize v_GetFileSize
 #define SetEndOfFile v_SetEndOfFile
 #define SetFilePointer v_SetFilePointer
+
+#ifdef _UNICODE
+    #define _tfopen v__wfopen
+#else
+    #define _tfopen v_fopen
+#endif
 
 /**************************************************************************/

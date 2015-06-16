@@ -301,7 +301,7 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
 }
 
 #ifdef _WIN32
-    v_LPFILE v_wfopen(v_LPCWSTR fname, v_LPCWSTR modes)
+    v_LPFILE v__wfopen(v_LPCWSTR fname, v_LPCWSTR modes)
     {
         FILE *fp;
         size_t n;
@@ -379,7 +379,7 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
         return v_fp;
     }
 
-    int v_wfsave(v_LPCWSTR fname, v_LPFILE v_fp, v_LPCWSTR modes)
+    int v__wfsave(v_LPCWSTR fname, v_LPFILE v_fp, v_LPCWSTR modes)
     {
         FILE *fp;
         int ret = v_EOF;
@@ -509,11 +509,93 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
         return v_HFILE_ERROR;
     }
 
-    v_HFILE WINAPI v_OpenFile(LPCSTR fname, LPOFSTRUCT pos, UINT style)
+    v_HFILE WINAPI v_OpenFile(LPCSTR fname, LPOFSTRUCT pofs, UINT style)
     {
-        /* FIXME */
-        assert(0);
-        return 0;
+        v_LPFILE fp;
+
+        assert(fname && pofs);
+        if (fname == NULL || pofs == NULL)
+            return v_HFILE_ERROR;
+
+        if (style & OF_DELETE)
+            return (v_HFILE)DeleteFileA(fname);
+        if (style & OF_CREATE)
+            return v_fopen_wb();
+        if (style & OF_PARSE)
+        {
+            ZeroMemory(pofs, sizeof(*pofs));
+            pofs->cBytes = sizeof(*pofs);
+            lstrcpynA(pofs->szPathName, fname, OFS_MAXPATHNAME);
+            return NULL;
+        }
+        if (style & OF_EXIST)
+        {
+            return (v_HFILE)(~GetFileAttributesA(fname) ? 1 : -1);
+        }
+
+        if (style & OF_PROMPT)
+        {
+            while (!~GetFileAttributesA(fname))
+            {
+                LPSTR p, q;
+                CHAR title[256], text[256];
+                GetModuleFileNameA(NULL, text, 256);
+                p = q = text;
+                while (*q)
+                {
+                    if (*q == '\\' || *q == '/')
+                        p = q + 1;
+                    q++;
+                }
+                #ifdef NO_JAP_ALLOWED
+                    lstrcpyA(title, p);
+                    lstrcatA(title, " - The file is not found");
+                    lstrcpyA(text, "File ");
+                    lstrcatA(text, fname);
+                    lstrcpyA(text, " doesn't exist.");
+                #else
+                    lstrcpyA(title, p);
+                    lstrcatA(title, " - ファイルが見つかりません");
+                    lstrcpyA(text, "ファイル ");
+                    lstrcatA(text, fname);
+                    lstrcpyA(text, " は存在しません。");
+                #endif
+                if (MessageBoxA(NULL, text, title,
+                                MB_ICONERROR | MB_RETRYCANCEL) == IDCANCEL)
+                {
+                    return v_HFILE_ERROR;
+                }
+            }
+        }
+
+        if (style & OF_REOPEN)
+        {
+            /* TODO & FIXME */
+            assert(0);
+            return v_HFILE_ERROR;
+        }
+
+        if (style & OF_VERIFY)
+        {
+            /* TODO & FIXME */
+        }
+
+        fp = NULL;
+        switch (style & 3)
+        {
+        case OF_READ:
+            fp = v_fopen(fname, "rb");
+            break;
+        case OF_WRITE:
+            fp = v_fopen_wb();
+            break;
+        case OF_READWRITE:
+            fp = v_fopen(fname, "r+b");
+            break;
+        }
+        if (fp == NULL)
+            fp = v_HFILE_ERROR;
+        return fp;
     }
 #endif  /* (defined(WIN16) || defined(_WIN32)) */
 
@@ -674,15 +756,15 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
             if (creation == CREATE_NEW || creation == CREATE_ALWAYS ||
                 creation == TRUNCATE_EXISTING)
             {
-                fp = v_wfopen(fname, L"w+b");
+                fp = v__wfopen(fname, L"w+b");
             }
             else if (creation == OPEN_EXISTING)
             {
-                fp = v_wfopen(fname, L"r+b");
+                fp = v__wfopen(fname, L"r+b");
             }
             else if (creation == OPEN_ALWAYS)
             {
-                fp = v_wfopen(fname, L"r+b");
+                fp = v__wfopen(fname, L"r+b");
                 if (fp == NULL)
                     fp = v_fopen_wb();
             }
@@ -692,14 +774,14 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
             if (creation == CREATE_NEW || creation == CREATE_ALWAYS ||
                 creation == TRUNCATE_EXISTING)
             {
-                fp = v_wfopen(fname, L"wb");
+                fp = v__wfopen(fname, L"wb");
             }
         }
         else if (access & GENERIC_READ)
         {
             if (creation == OPEN_EXISTING)
             {
-                fp = v_wfopen(fname, L"rb");
+                fp = v__wfopen(fname, L"rb");
             }
         }
         if (fp == NULL)

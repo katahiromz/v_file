@@ -204,12 +204,12 @@ void v_fsettext(v_FILE *fp);
 /**************************************************************************/
 /* loading from real file / saving to real file */
 
-v_LPFILE        v_fopen (v_LPCSTR fname, v_LPCSTR modes);
-int             v_fsave (v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes);
+v_LPFILE        v_fopen  (v_LPCSTR fname, v_LPCSTR modes);
+int             v_fsave  (v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes);
 
 #ifdef _WIN32
-    v_LPFILE    v_wfopen(v_LPCWSTR fname, v_LPCWSTR modes);
-    int         v_wfsave(v_LPCWSTR fname, v_LPFILE v_fp, v_LPCWSTR modes);
+    v_LPFILE    v__wfopen(v_LPCWSTR fname, v_LPCWSTR modes);
+    int         v__wfsave(v_LPCWSTR fname, v_LPFILE v_fp, v_LPCWSTR modes);
 #endif
 
 /**************************************************************************/
@@ -223,7 +223,7 @@ int             v_fsave (v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes);
     UINT WINAPI v__lread(v_HFILE hf, LPVOID buffer, UINT cb);
     UINT WINAPI v__lwrite(v_HFILE hf, LPCSTR buffer, UINT cb);
     v_HFILE WINAPI v__lclose(v_HFILE hf);
-    v_HFILE WINAPI v_OpenFile(LPCSTR fname, LPOFSTRUCT pos, UINT style);
+    v_HFILE WINAPI v_OpenFile(LPCSTR fname, LPOFSTRUCT pofs, UINT style);
 #endif  /* (defined(WIN16) || defined(_WIN32)) */
 
 #ifdef WIN16
