@@ -1,0 +1,63 @@
+############################################################################
+## Makefile.gcc
+## Copyright (C) 2015 Katayama Hirofumi MZ.  All rights reserved.
+############################################################################
+# Usage: make -f Makefile.gcc
+
+DOTOBJ = .o
+DOTEXE = .exe
+CURDIR = ./
+
+#
+# C compiler
+#
+CC = gcc
+
+CCFLAGS = -m32 -D_DEBUG -O0 -g -ggdb -static -Wall -pedantic     # x86 (Debug)
+#CCFLAGS = -m64 -D_DEBUG -O0 -g -ggdb -static -Wall -pedantic    # x64 (Debug)
+
+#CCFLAGS = -m32 -DNDEBUG -O2 -static -Wall -pedantic             # x86 (Release)
+#CCFLAGS = -m64 -DNDEBUG -O2 -static -Wall -pedantic             # x64 (Release)
+
+PROGRAM = make_switch$(DOTEXE)
+PROGRAM_OBJS = program$(DOTOBJ)
+PROGRAM_LIBS = libmake_switch.a
+
+LIBRARY = libmake_switch.a
+LIBRARY_OBJS = make_switch$(DOTOBJ) v_file$(DOTOBJ)
+
+all: library test
+library: $(LIBRARY)
+test: $(PROGRAM)
+	$(CURDIR)$(PROGRAM) abb abc ad
+$(LIBRARY): $(LIBRARY_OBJS)
+	ar r $(LIBRARY) $(LIBRARY_OBJS)
+	ranlib $(LIBRARY)
+
+$(PROGRAM): $(PROGRAM_OBJS) $(PROGRAM_LIBS)
+	$(CC) $(CCFLAGS) -o $(PROGRAM) $(PROGRAM_OBJS) $(PROGRAM_LIBS)
+	chmod +x $(PROGRAM)
+
+make_switch$(DOTOBJ): make_switch.c make_switch.h
+	$(CC) $(CCFLAGS) -c -o make_switch$(DOTOBJ) make_switch.c
+v_file$(DOTOBJ): v_file.c v_file.h
+	$(CC) $(CCFLAGS) -c -o v_file$(DOTOBJ) v_file.c
+program$(DOTOBJ): program.c make_switch.h
+	$(CC) $(CCFLAGS) -c -o program$(DOTOBJ) program.c
+
+clean:
+	rm -f *.o
+	rm -f *.suo
+	rm -f *.sdf
+	rm -f *.user
+	rm -f *.ncb
+	rm -f *.filters
+	rm -fR Debug/
+	rm -fR Release/
+
+extra_clean: clean
+	rm -f *.obj
+	rm -f *.tds
+	rm -f *.lib
+	rm -f lib*.a
+	rm -f *.exe

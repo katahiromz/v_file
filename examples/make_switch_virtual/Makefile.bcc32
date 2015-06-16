@@ -1,0 +1,61 @@
+############################################################################
+## Makefile.bcc32
+## Copyright (C) 2015 Katayama Hirofumi MZ.  All rights reserved.
+############################################################################
+# Usage: make -f Makefile.bcc32
+
+DOTOBJ = .obj
+DOTEXE = .exe
+CURDIR = .\\
+
+#
+# C compiler
+#
+CC = bcc32
+
+CCFLAGS = -WC -D_DEBUG -Od -v -y        # x86 (Debug)
+
+#CCFLAGS = -WC -DNDEBUG -O2             # x86 (Release)
+
+PROGRAM = make_switch$(DOTEXE)
+PROGRAM_OBJS = program$(DOTOBJ)
+PROGRAM_LIBS = make_switch.lib
+
+LIBRARY = make_switch.lib
+LIBRARY_OBJS = make_switch$(DOTOBJ) v_file$(DOTOBJ)
+
+all: library test
+library: make_switch.lib
+test: $(PROGRAM)
+	$(CURDIR)$(PROGRAM) abb abc ad
+
+$(LIBRARY): $(LIBRARY_OBJS)
+	if exist $(LIBRARY) del make_switch.lib
+	tlib $(LIBRARY) +make_switch$(DOTOBJ) +v_file$(DOTOBJ)
+
+$(PROGRAM): $(PROGRAM_OBJS)
+	$(CC) $(CCFLAGS) -e$(PROGRAM) $(PROGRAM_OBJS) $(PROGRAM_LIBS)
+
+make_switch$(DOTOBJ): make_switch.c make_switch.h
+	$(CC) $(CCFLAGS) -c -omake_switch$(DOTOBJ) make_switch.c
+v_file$(DOTOBJ): v_file.c v_file.h
+	$(CC) $(CCFLAGS) -c -ov_file$(DOTOBJ) v_file.c
+program$(DOTOBJ): program.c make_switch.h
+	$(CC) $(CCFLAGS) -c -oprogram$(DOTOBJ) program.c
+
+clean:
+	if exist *.obj del *.obj
+	if exist *.suo del /A *.suo
+	if exist *.sdf del *.sdf
+	if exist *.user del *.user
+	if exist *.ncb del *.ncb
+	if exist *.filters del *.filters
+	if exist Debug rmdir /S /Q Debug
+	if exist Release rmdir /S /Q Release
+
+extra_clean: clean
+	if exist *.obj del *.obj
+	if exist *.tds del *.tds
+	if exist *.lib del *.lib
+	if exist lib*.a del lib*.a
+	if exist *.exe del *.exe

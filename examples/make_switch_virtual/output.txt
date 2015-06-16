@@ -1,0 +1,44 @@
+int identify_string(const char *s)
+{
+    switch (s[0])
+    {
+    case 'a':
+        switch (s[1])
+        {
+        case 'b':
+            switch (s[2])
+            {
+            case 'b':
+                switch (s[3])
+                {
+                case 0:
+                    return 0;
+                default:
+                    return -1;
+                }
+            case 'c':
+                switch (s[3])
+                {
+                case 0:
+                    return 1;
+                default:
+                    return -1;
+                }
+            default:
+                return -1;
+            }
+        case 'd':
+            switch (s[2])
+            {
+            case 0:
+                return 2;
+            default:
+                return -1;
+            }
+        default:
+            return -1;
+        }
+    default:
+        return -1;
+    }
+}
