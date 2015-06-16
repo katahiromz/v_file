@@ -163,7 +163,8 @@ v_LPCHAR v_fclose_detach(v_LPFILE fp)
         data = fp->data;
         free(fp);
     }
-    return data;    /* the library user should free this */
+    /* NOTE: the library user should free return value of v_fclose_detach */
+    return data;
 }
 
 /**************************************************************************/
@@ -493,16 +494,16 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
         }
         return v_HFILE_ERROR;
     }
-#endif  /* (defined(WIN16) || defined(_WIN32)) */
 
-#ifdef WIN16
-    v_HFILE WINAPI v_OpenFile16(LPCSTR fname, LPOFSTRUCT pos, UINT style)
+    v_HFILE WINAPI v_OpenFile(LPCSTR fname, LPOFSTRUCT pos, UINT style)
     {
         /* FIXME */
         assert(0);
         return 0;
     }
+#endif  /* (defined(WIN16) || defined(_WIN32)) */
 
+#ifdef WIN16
     HANDLE WINAPI v_CreateFile16(LPCSTR fname, DWORD access, DWORD share,
                                  LPVOID sa, DWORD creation, DWORD flags,
                                  HANDLE hTempFile)
@@ -515,7 +516,7 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
                     return v_stdin;
                 if (access & GENERIC_WRITE)
                     return v_stdout;
-                return NULL;
+                return INVALID_HANDLE_VALUE;
             }
             if (lstrcmpiA(fname, "CONIN$") == 0)
             {
@@ -560,6 +561,8 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
                 fp = v_fopen(fname, "rb");
             }
         }
+        if (fp == NULL)
+            fp = INVALID_HANDLE_VALUE;
         return fp;
     }
 #endif  /* def WIN16 */
@@ -577,7 +580,7 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
                     return v_stdin;
                 if (access & GENERIC_WRITE)
                     return v_stdout;
-                return NULL;
+                return INVALID_HANDLE_VALUE;
             }
             if (lstrcmpiA(fname, "CONIN$") == 0)
             {
@@ -622,6 +625,8 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
                 fp = v_fopen(fname, "rb");
             }
         }
+        if (fp == NULL)
+            fp = INVALID_HANDLE_VALUE;
         return fp;
     }
 
@@ -638,7 +643,7 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
                     return v_stdout;
                 if (access & GENERIC_READ)
                     return v_stdin;
-                return NULL;
+                return INVALID_HANDLE_VALUE;
             }
             if (lstrcmpiW(fname, L"CONIN$") == 0)
             {
@@ -683,14 +688,9 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
                 fp = v_wfopen(fname, L"rb");
             }
         }
+        if (fp == NULL)
+            fp = INVALID_HANDLE_VALUE;
         return fp;
-    }
-
-    v_HFILE WINAPI v_OpenFile32(LPCSTR fname, LPOFSTRUCT pos, UINT style)
-    {
-        /* FIXME */
-        assert(0);
-        return 0;
     }
 
     BOOL WINAPI v_CloseHandle(HANDLE hFile)

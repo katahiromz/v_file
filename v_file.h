@@ -154,7 +154,7 @@ typedef struct v_FILE
 typedef v_LPFILE                v_HFILE;
 
 /* virtual HFILE_ERROR */
-#define v_HFILE_ERROR           ((v_HFILE)-1)
+#define v_HFILE_ERROR           ((v_HFILE)(size_t)-1)
 
 /**************************************************************************/
 /* opening / closing */
@@ -223,10 +223,10 @@ int             v_fsave (v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes);
     UINT WINAPI v__lread(v_HFILE hf, LPVOID buffer, UINT cb);
     UINT WINAPI v__lwrite(v_HFILE hf, LPCSTR buffer, UINT cb);
     v_HFILE WINAPI v__lclose(v_HFILE hf);
+    v_HFILE WINAPI v_OpenFile(LPCSTR fname, LPOFSTRUCT pos, UINT style);
 #endif  /* (defined(WIN16) || defined(_WIN32)) */
 
 #ifdef WIN16
-    v_HFILE WINAPI v_OpenFile16(LPCSTR fname, LPOFSTRUCT pos, UINT style);
     HANDLE  WINAPI v_CreateFile16(LPCSTR fname, DWORD access, DWORD share,
                                   LPVOID sa, DWORD creation, DWORD flags,
                                   HANDLE hTempFile);
@@ -239,7 +239,6 @@ int             v_fsave (v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes);
     HANDLE WINAPI  v_CreateFileW(LPCWSTR fname, DWORD access, DWORD share,
                                  LPVOID sa, DWORD creation, DWORD flags,
                                  HANDLE hTempFile);
-    v_HFILE WINAPI v_OpenFile32(LPCSTR fname, LPOFSTRUCT pos, UINT style);
     BOOL    WINAPI v_CloseHandle(HANDLE hFile);
     BOOL    WINAPI v_ReadFile(HANDLE hFile, LPVOID pBuf, DWORD to_read,
                               LPDWORD read, LPVOID o);
@@ -255,14 +254,12 @@ int             v_fsave (v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes);
 /* mapping */
 #ifdef WIN16
     #define v_CreateFile v_CreateFile16
-    #define v_OpenFile v_OpenFile16
 #elif defined(_WIN32)
     #ifdef UNICODE
         #define v_CreateFile v_CreateFileW
     #else
         #define v_CreateFile v_CreateFileA
     #endif
-    #define v_OpenFile v_OpenFile32
 #endif
 
 /**************************************************************************/
