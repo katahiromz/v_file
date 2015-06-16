@@ -7,6 +7,12 @@
     #include "v_file.h"
 #endif
 
+#ifndef V_FILE_WRAP_H_
+    #define V_FILE_WRAP_H_ 1
+#else
+    #error You lose.
+#endif
+
 /**************************************************************************/
 /* undef */
 

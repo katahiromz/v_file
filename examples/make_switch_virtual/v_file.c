@@ -472,7 +472,7 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
                 assert(0);
             }
         }
-        return 0xFFFFFFFF;
+        return 0xFFFFFFFFL;
     }
 
     UINT WINAPI v__lread(v_HFILE hf, LPVOID buffer, UINT cb)
@@ -484,7 +484,11 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
             if (read)
                 return read;
         }
-        return 0xFFFFFFFF;
+        #ifdef WIN16
+            return 0xFFFF;
+        #else
+            return 0xFFFFFFFFU;
+        #endif
     }
 
     UINT WINAPI v__lwrite(v_HFILE hf, LPCSTR buffer, UINT cb)
@@ -496,7 +500,11 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
             if (written)
                 return written;
         }
-        return 0xFFFFFFFF;
+        #ifdef WIN16
+            return 0xFFFF;
+        #else
+            return 0xFFFFFFFFU;
+        #endif
     }
 
     v_HFILE WINAPI v__lclose(v_HFILE hf)
@@ -838,7 +846,7 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
         if (fp == NULL || fp == v_HFILE_ERROR)
         {
             SetLastError(ERROR_INVALID_HANDLE);
-            return 0xFFFFFFFF;
+            return 0xFFFFFFFFUL;
         }
 #endif
         size = fp->size;
@@ -848,10 +856,10 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
             SetLastError(NO_ERROR);
             return (DWORD)size;
         }
-        else if (size > 0xFFFFFFFF)
+        else if (size > 0xFFFFFFFFUL)
         {
             SetLastError(ERROR_MORE_DATA);
-            return 0xFFFFFFFF;
+            return 0xFFFFFFFFUL;
         }
         else
         {
@@ -885,7 +893,7 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
         if (fp == NULL || fp == v_HFILE_ERROR)
         {
             SetLastError(ERROR_INVALID_HANDLE);
-            return 0xFFFFFFFF;
+            return 0xFFFFFFFFUL;
         }
 #endif
 
@@ -929,7 +937,7 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
             break;
         default:
             assert(0);
-            return 0xFFFFFFFF;
+            return 0xFFFFFFFFUL;
         }
 
         if (hi)
@@ -938,7 +946,7 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
             *hi = (DWORD)(fp->index >> 32);
             SetLastError(NO_ERROR);
         }
-        else if (fp->index > 0xFFFFFFFF)
+        else if (fp->index > 0xFFFFFFFFUL)
         {
             /* cannot store high */
             SetLastError(ERROR_MORE_DATA);
@@ -948,7 +956,7 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
             /* no high required */
             SetLastError(NO_ERROR);
         }
-        return (DWORD)(fp->index & 0xFFFFFFFF);
+        return (DWORD)(fp->index & 0xFFFFFFFFUL);
     }
 #endif  /* def _WIN32 */
 
