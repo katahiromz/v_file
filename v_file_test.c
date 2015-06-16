@@ -513,11 +513,12 @@ void v_file_test8(void)
     assert(n == 0);
 }
 
-void v_file_test9(void)
+void v_file_test9_ms(void)
 {
     int m, n, k;
     double d;
     char buf[32];
+    FILE *fp;
 
     /*
      * v_file_init_stdio
@@ -551,6 +552,7 @@ void v_file_test9(void)
      */
     v_file_init_stdio_2("testdata\\data1.dat", "r");
     assert(memcmp(v_stdin->data, "TEST\ntest\nT", 11) == 0);
+    fp = fopen("testdata\\data1.dat", "r");
 
     assert(v_fgets(buf, 32, v_stdin));
     assert(strcmp(buf, "TEST\n") == 0);
@@ -559,6 +561,86 @@ void v_file_test9(void)
     assert(v_fgets(buf, 32, v_stdin));
     assert(strcmp(buf, "T") == 0);
     assert(v_fgets(buf, 32, v_stdin) == NULL);
+
+    assert(fgets(buf, 32, fp));
+    assert(strcmp(buf, "TEST\n") == 0);
+    assert(fgets(buf, 32, fp));
+    assert(strcmp(buf, "test\n") == 0);
+    assert(fgets(buf, 32, fp));
+    assert(strcmp(buf, "T") == 0);
+    assert(fgets(buf, 32, fp) == NULL);
+    fclose(fp);
+
+    v_printf("This is standard output.\n");
+    v_puts("123");
+    v_fprintf(v_stderr, "This is standard error output.\n");
+    v_fputs("123", v_stderr);
+
+    assert(memcmp(v_stdout->data,
+        "This is standard output.\n123\n", 29) == 0);
+    assert(memcmp(v_stderr->data,
+        "This is standard error output.\n123", 34) == 0);
+
+    v_file_destroy_stdio();
+}
+
+void v_file_test9_linux(void)
+{
+    int m, n, k;
+    double d;
+    char buf[32];
+    FILE *fp;
+
+    /*
+     * v_file_init_stdio
+     */
+    v_file_init_stdio("2\n4 2\nstr\n", 10, "rb");
+    assert(memcmp(v_stdin->data, "2\n4 2\nstr\n", 10) == 0);
+
+    k = v_scanf("%d", &m);
+    assert(k == 1);
+    assert(m == 2);
+    k = v_scanf("%d%lf", &n, &d);
+    assert(k == 2);
+    assert(n == 4 && d == 2.0);
+    assert(v_gets(buf));
+    assert(strcmp(buf, "str") == 0);
+
+    v_printf("This is standard output.\n");
+    v_puts("123");
+    v_fprintf(v_stderr, "This is standard error output.\n");
+    v_fputs("123", v_stderr);
+
+    assert(memcmp(v_stdout->data,
+        "This is standard output.\n123\n", 29) == 0);
+    assert(memcmp(v_stderr->data,
+        "This is standard error output.\n123", 34) == 0);
+
+    v_file_destroy_stdio();
+
+    /*
+     * v_file_init_stdio_2
+     */
+    v_file_init_stdio_2("testdata\\data1.dat", "r");
+    assert(memcmp(v_stdin->data, "TEST\r\ntest\r\nT", 11) == 0);
+    fp = fopen("testdata\\data1.dat", "r");
+
+    assert(v_fgets(buf, 32, v_stdin));
+    assert(strcmp(buf, "TEST\r\n") == 0);
+    assert(v_fgets(buf, 32, v_stdin));
+    assert(strcmp(buf, "test\r\n") == 0);
+    assert(v_fgets(buf, 32, v_stdin));
+    assert(strcmp(buf, "T") == 0);
+    assert(v_fgets(buf, 32, v_stdin) == NULL);
+
+    assert(fgets(buf, 32, fp));
+    assert(strcmp(buf, "TEST\r\n") == 0);
+    assert(fgets(buf, 32, fp));
+    assert(strcmp(buf, "test\r\n") == 0);
+    assert(fgets(buf, 32, fp));
+    assert(strcmp(buf, "T") == 0);
+    assert(fgets(buf, 32, fp) == NULL);
+    fclose(fp);
 
     v_printf("This is standard output.\n");
     v_puts("123");
@@ -587,6 +669,7 @@ int main(void)
         v_file_test6();
         v_file_test7_ms();
         v_file_test8();
+        v_file_test9_ms();
     #else
         v_file_test1_linux();
         v_file_test2_linux();
@@ -596,8 +679,8 @@ int main(void)
         v_file_test6();
         v_file_test7_linux();
         v_file_test8();
+        v_file_test9_linux();
     #endif
-    v_file_test9();
     return 0;
 }
 

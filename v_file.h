@@ -177,7 +177,7 @@ int         v_fclose(v_LPFILE fp);              /* will free fp->data  */
 v_LPCHAR    v_fclose_detach(v_LPFILE fp);       /* won't free fp->data */
 
 /**************************************************************************/
-/* binary mode / text mode */
+/* set binary mode / set text mode */
 
 void v_fsetbin(v_FILE *fp);
 void v_fsettext(v_FILE *fp);

@@ -168,7 +168,7 @@ v_LPCHAR v_fclose_detach(v_LPFILE fp)
 }
 
 /**************************************************************************/
-/* binary mode / text mode */
+/* set binary mode / set text mode */
 
 void v_fsetbin(v_FILE *fp)
 {
