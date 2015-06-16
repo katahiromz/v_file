@@ -1088,6 +1088,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
     {
         assert(modes);
         assert(input_data || input_size == 0);
+        assert(strcmp(modes, "r") == 0 || strcmp(modes, "rb") == 0);
         v_file_destroy_stdio();
         if (strchr(modes, 'b'))
             v_stdin = v_fopen_rb(input_data, input_size);
@@ -1100,6 +1101,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
     void v_file_init_stdio_2(v_LPCSTR input_file_name, v_LPCSTR modes)
     {
         assert(modes);
+        assert(strcmp(modes, "r") == 0 || strcmp(modes, "rb") == 0);
         v_file_destroy_stdio();
         if (input_file_name)
             v_stdin = v_fopen(input_file_name, modes);
