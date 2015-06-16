@@ -99,12 +99,15 @@ extern "C"
 #endif
 
 /* virtual "fpos_t" type */
-#if defined(_WIN64) || defined(__x86_64__) || defined(__ppc64__)
-    typedef unsigned long long  v_fpos_t;
-#elif defined(MSDOS) || defined(WIN16)
-    typedef unsigned int        v_fpos_t;
-#else
-    typedef unsigned long       v_fpos_t;
+typedef size_t                  v_fpos_t;
+#if 0
+    #if defined(_WIN64) || defined(__x86_64__) || defined(__ppc64__)
+        typedef unsigned long long  v_fpos_t;
+    #elif defined(MSDOS) || defined(WIN16)
+        typedef unsigned int        v_fpos_t;
+    #else
+        typedef unsigned long       v_fpos_t;
+    #endif
 #endif
 
 /* virtual pointer types */
@@ -130,10 +133,15 @@ extern "C"
 /* virtual "FILE" structure */
 typedef struct v_FILE
 {
-    v_LPCHAR    data;       /* malloc'ed and free'd */
-    v_fpos_t    index;      /* file position */
-    v_fpos_t    size;       /* file size */
-    int         modes;      /* virtual file modes */
+    v_LPCHAR        data;       /* malloc'ed and free'd */
+    v_fpos_t        index;      /* file position */
+    v_fpos_t        size;       /* file size */
+    int             modes;      /* virtual file modes */
+    union user_data
+    {
+        v_LPVOID    p;
+        size_t      i;
+    } user;
 } v_FILE;
 
 /* pointer to v_FILE */

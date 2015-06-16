@@ -53,6 +53,7 @@ clean:
 	rm -f *.filters
 	rm -fR Debug/
 	rm -fR Release/
+	rm -fR x64/
 
 extra_clean: clean
 	rm -f *.obj
