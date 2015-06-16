@@ -15,7 +15,7 @@ become virtual file operations on memory, as follows:
     <stdio.h>          | "v_file.h"
     -------------------+-----------------------
     FILE structure     | v_FILE structure
-    fopen              | v_fopen_*
+    fopen              | v_fopen or v_fopen_*
     fclose             | v_fclose
     fread              | v_fread
     fwrite             | v_fwrite
