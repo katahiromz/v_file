@@ -5,7 +5,8 @@
 
 This library "v_file" virtualizes file I/O operations of <stdio.h>.
 
-Tested on Visual C++ 2013, MinGW g++, Linux g++, and Linux clang.
+Tested on Visual C++ 2013, Borland C++ Compiler 5.5.1, MinGW g++, 
+Linux g++, and Linux clang.
 
 By replacing <stdio.h> items with v_file's items, file operations 
 become virtual file operations on memory, as follows:
