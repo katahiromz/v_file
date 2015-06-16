@@ -7,7 +7,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include "make_switch.h"
-#include "v_file_wrap.h"
+
+/* NOTE: This software was hacked by katahiromz. */
+#define KATAHIROMZ_HACKED 1
+
+#ifdef KATAHIROMZ_HACKED
+    #include "v_file_wrap.h"
+#endif
 
 /**************************************************************************/
 /* configuration */
@@ -100,8 +106,10 @@ int ms_make_identify_string_function(int count, char **entries)
     int i, len, max_length;
     MS_MAKE_SWITCH ms;
 
+#ifdef KATAHIROMZ_HACKED
     /* initialize the v_file standard I/O */
     v_file_init_stdio(NULL, 0, "rb");
+#endif
 
     /* calculate the maximum length */
     max_length = 0;
@@ -147,11 +155,13 @@ int ms_make_identify_string_function(int count, char **entries)
     free(ms.str);
     free(ms.checks);
 
+#ifdef KATAHIROMZ_HACKED
     /* output */
     v_fsave("output.txt", v_stdout, "w");
 
     /* destroy the v_file standard I/O */
     v_file_destroy_stdio();
+#endif
 
     return 1;   /* success */
 }
