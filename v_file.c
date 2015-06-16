@@ -36,7 +36,7 @@ extern "C"
 /* opening / closing */
 
 v_LPFILE 
-v_fopen_intern(v_LPCVOID data, v_fpos_t index, v_fpos_t siz, int modes)
+v_fopen_intern(v_LPCVOID data, size_t index, size_t siz, int modes)
 {
     v_LPFILE fp;
 
@@ -74,42 +74,42 @@ v_fopen_intern(v_LPCVOID data, v_fpos_t index, v_fpos_t siz, int modes)
 }
 
 #ifndef V_FILE_NEED_SPEED
-    v_LPFILE v_fopen_r(v_LPCVOID data, v_fpos_t siz)
+    v_LPFILE v_fopen_r(v_LPCVOID data, size_t siz)
     {
         return v_fopen_intern(data, 0, siz, v_FMODE_READ | v_FMODE_TEXT);
     }
 
-    v_LPFILE v_fopen_a(v_LPCVOID data, v_fpos_t siz)
+    v_LPFILE v_fopen_a(v_LPCVOID data, size_t siz)
     {
         return v_fopen_intern(data, siz, siz, v_FMODE_APPEND | v_FMODE_TEXT);
     }
 
-    v_LPFILE v_fopen_rb(v_LPCVOID data, v_fpos_t siz)
+    v_LPFILE v_fopen_rb(v_LPCVOID data, size_t siz)
     {
         return v_fopen_intern(data, 0, siz, v_FMODE_READ | v_FMODE_BINARY);
     }
 
-    v_LPFILE v_fopen_ab(v_LPCVOID data, v_fpos_t siz)
+    v_LPFILE v_fopen_ab(v_LPCVOID data, size_t siz)
     {
         return v_fopen_intern(data, siz, siz, v_FMODE_APPEND | v_FMODE_BINARY);
     }
 
-    v_LPFILE v_fopen_rp(v_LPCVOID data, v_fpos_t siz)
+    v_LPFILE v_fopen_rp(v_LPCVOID data, size_t siz)
     {
         return v_fopen_intern(data, 0, siz, v_FMODE_READWRITE | v_FMODE_TEXT);
     }
 
-    v_LPFILE v_fopen_ap(v_LPCVOID data, v_fpos_t siz)
+    v_LPFILE v_fopen_ap(v_LPCVOID data, size_t siz)
     {
         return v_fopen_intern(data, siz, siz, v_FMODE_APPEND | v_FMODE_TEXT);
     }
 
-    v_LPFILE v_fopen_rpb(v_LPCVOID data, v_fpos_t siz)
+    v_LPFILE v_fopen_rpb(v_LPCVOID data, size_t siz)
     {
         return v_fopen_intern(data, 0, siz, v_FMODE_READWRITE | v_FMODE_BINARY);
     }
 
-    v_LPFILE v_fopen_apb(v_LPCVOID data, v_fpos_t siz)
+    v_LPFILE v_fopen_apb(v_LPCVOID data, size_t siz)
     {
         return v_fopen_intern(data, siz, siz, v_FMODE_APPEND | v_FMODE_BINARY);
     }
@@ -188,7 +188,7 @@ void v_fsettext(v_FILE *fp)
 v_LPFILE v_fopen(v_LPCSTR fname, v_LPCSTR modes)
 {
     FILE *fp;
-    int n;
+    size_t n;
     char buf[v_FILE_MAX_BUFFER];
     v_LPFILE v_fp = NULL;
     int m;
@@ -273,7 +273,7 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp)
     assert(fp);
     if (fp)
     {
-        if (fwrite(v_fp->data, v_fp->size, 1, fp))
+        if (fwrite(v_fp->data, (size_t)v_fp->size, 1, fp))
             ret = 0;
         ret |= fclose(fp);
     }
@@ -284,7 +284,7 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp)
     v_LPFILE v_wfopen(v_LPCWSTR fname, v_LPCWSTR modes)
     {
         FILE *fp;
-        int n;
+        size_t n;
         char buf[v_FILE_MAX_BUFFER];
         v_LPFILE v_fp = NULL;
         int m;
@@ -369,7 +369,7 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp)
         assert(fp);
         if (fp)
         {
-            if (fwrite(v_fp->data, v_fp->size, 1, fp))
+            if (fwrite(v_fp->data, (size_t)v_fp->size, 1, fp))
                 ret = 0;
             ret |= fclose(fp);
         }
@@ -380,9 +380,9 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp)
 /**************************************************************************/
 /* binary transfer */
 
-int v_fread_raw(v_LPVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp)
+size_t v_fread_raw(v_LPVOID ptr, size_t siz, size_t nelem, v_LPFILE fp)
 {
-    v_fpos_t count, read_size;
+	v_fpos_t count, read_size;
     v_LPCHAR pch;
 
 #ifndef V_FILE_NEED_SPEED
@@ -419,9 +419,10 @@ int v_fread_raw(v_LPVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp)
     return count;
 }
 
-int v_fwrite_raw(v_LPCVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp)
+size_t v_fwrite_raw(v_LPCVOID ptr, size_t siz, size_t nelem, v_LPFILE fp)
 {
-    v_fpos_t increment, end;
+	size_t increment;
+	v_fpos_t end;
     v_LPCHAR pch;
 
 #ifndef V_FILE_NEED_SPEED
@@ -533,12 +534,12 @@ int v_fputc(char c, v_LPFILE fp)
 /**************************************************************************/
 /* read / write buffer */
 
-int v_fread(v_LPVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp)
+size_t v_fread(v_LPVOID ptr, size_t siz, size_t nelem, v_LPFILE fp)
 {
 #if (v_FMODE_TEXT == 0)
     v_LPCHAR pch;
     int ch;
-    v_fpos_t i, count;
+    size_t i, count;
 #endif
 
 #ifndef V_FILE_NEED_SPEED
@@ -580,12 +581,12 @@ hell:
 #endif  /* (v_FMODE_TEXT == 0) */
 }
 
-int v_fwrite(v_LPCVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp)
+size_t v_fwrite(v_LPCVOID ptr, size_t siz, size_t nelem, v_LPFILE fp)
 {
 #if (v_FMODE_TEXT == 0)
     v_LPCSTR pch;
     int ret;
-    v_fpos_t i, count;
+    size_t i, count;
 #endif
 
 #ifndef V_FILE_NEED_SPEED
@@ -1084,7 +1085,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
 
     /* initialize the v_file standard I/O */
     void v_file_init_stdio(
-        v_LPCVOID input_data, v_fpos_t input_size, v_LPCSTR modes)
+        v_LPCVOID input_data, size_t input_size, v_LPCSTR modes)
     {
 #ifndef V_FILE_NEED_SPEED
         assert(modes);

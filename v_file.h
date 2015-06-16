@@ -99,7 +99,11 @@ extern "C"
 #endif
 
 /* virtual "fpos_t" type */
-typedef unsigned long v_fpos_t;
+#if defined(_WIN64) || defined(__x86_64__) || defined(__ppc64__)
+    typedef unsigned long long  v_fpos_t;
+#else
+    typedef unsigned long       v_fpos_t;
+#endif
 
 /* virtual pointer types */
 #if defined(MSDOS) || defined(WIN16)
@@ -144,29 +148,29 @@ typedef struct v_FILE
  * the internal function (don't use directly)
  */
 v_LPFILE 
-v_fopen_intern(v_LPCVOID data, v_fpos_t index, v_fpos_t siz, int modes);
+v_fopen_intern(v_LPCVOID data, size_t index, size_t siz, int modes);
 
 /*
  * text mode
  */
-v_LPFILE v_fopen_r  (v_LPCVOID data, v_fpos_t siz);     /* mode "r"  */
+v_LPFILE v_fopen_r  (v_LPCVOID data, size_t siz);       /* mode "r"  */
 v_LPFILE v_fopen_w  (void);                             /* mode "w"  */
-v_LPFILE v_fopen_a  (v_LPCVOID data, v_fpos_t siz);     /* mode "a"  */
+v_LPFILE v_fopen_a  (v_LPCVOID data, size_t siz);       /* mode "a"  */
 
-v_LPFILE v_fopen_rp (v_LPCVOID data, v_fpos_t siz);     /* mode "r+" */
+v_LPFILE v_fopen_rp (v_LPCVOID data, size_t siz);       /* mode "r+" */
 #define  v_fopen_wp v_fopen_rp                          /* mode "w+" */
-v_LPFILE v_fopen_ap (v_LPCVOID data, v_fpos_t siz);     /* mode "a+" */
+v_LPFILE v_fopen_ap (v_LPCVOID data, size_t siz);       /* mode "a+" */
 
 /*
  * binary mode
  */
-v_LPFILE v_fopen_rb (v_LPCVOID data, v_fpos_t siz);     /* mode "rb" */
+v_LPFILE v_fopen_rb (v_LPCVOID data, size_t siz);       /* mode "rb" */
 v_LPFILE v_fopen_wb (void);                             /* mode "w"  */
-v_LPFILE v_fopen_ab (v_LPCVOID data, v_fpos_t siz);     /* mode "ab" */
+v_LPFILE v_fopen_ab (v_LPCVOID data, size_t siz);       /* mode "ab" */
 
-v_LPFILE v_fopen_rpb(v_LPCVOID data, v_fpos_t siz);     /* mode "r+b" */
+v_LPFILE v_fopen_rpb(v_LPCVOID data, size_t siz);       /* mode "r+b" */
 #define  v_fopen_wpb v_fopen_wb                         /* mode "w+b" */
-v_LPFILE v_fopen_apb(v_LPCVOID data, v_fpos_t siz);     /* mode "a+b" */
+v_LPFILE v_fopen_apb(v_LPCVOID data, size_t siz);       /* mode "a+b" */
 
 #define v_tmpfile v_fopen_wpb
 
@@ -196,14 +200,14 @@ int             v_fsave (v_LPCSTR fname, v_LPFILE v_fp);
 /**************************************************************************/
 /* binary transfer */
 
-int v_fread_raw(v_LPVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp);
-int v_fwrite_raw(v_LPCVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp);
+size_t v_fread_raw(v_LPVOID ptr, size_t siz, size_t nelem, v_LPFILE fp);
+size_t v_fwrite_raw(v_LPCVOID ptr, size_t siz, size_t nelem, v_LPFILE fp);
 
 /**************************************************************************/
 /* read / write buffer */
 
-int v_fread(v_LPVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp);
-int v_fwrite(v_LPCVOID ptr, v_fpos_t siz, v_fpos_t nelem, v_LPFILE fp);
+size_t v_fread(v_LPVOID ptr, size_t siz, size_t nelem, v_LPFILE fp);
+size_t v_fwrite(v_LPCVOID ptr, size_t siz, size_t nelem, v_LPFILE fp);
 
 /**************************************************************************/
 /* read / write a character */
@@ -286,7 +290,7 @@ int     v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list va);
 
     /* initialize the v_file standard I/O */
     void v_file_init_stdio(
-        v_LPCVOID input_data, v_fpos_t input_size, v_LPCSTR modes);
+        v_LPCVOID input_data, size_t input_size, v_LPCSTR modes);
     void v_file_init_stdio_2(v_LPCSTR input_file_name, v_LPCSTR modes);
     /* destroy the v_file standard I/O */
     void v_file_destroy_stdio(void);

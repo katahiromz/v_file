@@ -151,7 +151,7 @@ void v_file_test2_ms(void)
     FILE *fp;
     v_LPFILE v_fp;
     char buf[16];
-    int n;
+    size_t n;
 
     v_fp = v_fopen_r("TEST\r\ntest\r\nT", 13);
     assert(v_fp);
@@ -197,7 +197,7 @@ void v_file_test2_linux(void)
     FILE *fp;
     v_LPFILE v_fp;
     char buf[16];
-    int n;
+    size_t n;
 
     v_fp = v_fopen_r("TEST\r\ntest\r\nT", 13);
     assert(v_fp);
@@ -249,7 +249,7 @@ void v_file_test3(void)
     FILE *fp;
     v_LPFILE v_fp;
     char buf[16];
-    int n;
+    size_t n;
 
     v_fp = v_fopen_rb("TEST\r\ntest\r\nT", 13);
     assert(v_fp);
@@ -301,7 +301,7 @@ void v_file_test4_ms(void)
 {
     FILE *fp;
     v_LPFILE v_fp;
-    int n;
+    size_t n;
 
     v_fp = v_fopen_w();
     assert(v_fp);
@@ -327,7 +327,7 @@ void v_file_test4_linux(void)
 {
     FILE *fp;
     v_LPFILE v_fp;
-    int n;
+    size_t n;
 
     v_fp = v_fopen_w();
     assert(v_fp);
@@ -353,7 +353,7 @@ void v_file_test5(void)
 {
     FILE *fp;
     v_LPFILE v_fp;
-    int n;
+    size_t n;
 
     v_fp = v_fopen_wb();
     assert(v_fp);
@@ -381,7 +381,7 @@ void v_file_test6(void)
     FILE *fp;
     v_LPFILE v_fp;
     char buf[32];
-    int n;
+    size_t n;
 
     v_fp = v_fopen_rb("TESTtestTE", 10);
     assert(v_fp);
@@ -406,7 +406,7 @@ void v_file_test7_ms(void)
 {
     v_LPFILE v_fp;
     char *buf[16];
-    int n;
+    size_t n;
 
     v_fp = v_fopen_ap("TESTtestTE", 10);
     assert(v_fp);
@@ -444,7 +444,7 @@ void v_file_test7_linux(void)
 {
     v_LPFILE v_fp;
     char buf[16];
-    int n;
+    size_t n;
 
     v_fp = v_fopen_ap("TESTtestTE", 10);
     assert(v_fp);
@@ -482,7 +482,7 @@ void v_file_test8(void)
 {
     v_LPFILE v_fp;
     char buf[16];
-    int n;
+    size_t n;
 
     v_fp = v_fopen_apb("TESTtestTE", 10);
     assert(v_fp);
