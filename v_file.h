@@ -294,17 +294,17 @@ int     v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list va);
     #ifdef V_FILE_NEED_SPEED
         #define v_getchar()     v_fgetc(v_stdin)
         #define v_putchar(c)    v_fputc((c), v_stdout);
-        #define v_gets(s)       v_fgets((s), v_FILE_MAX_BUFFER, v_stdin);
         #define v_puts(s)       (v_fputs((s), v_stdout), v_putchar('\n'), 0)
     #else
         int     v_getchar(void);
         int     v_putchar(char c);
-        v_LPSTR v_gets(v_LPSTR s);
         int     v_puts(v_LPCSTR s);
     #endif
 
     #define v_fgetchar v_getchar
     #define v_fputchar v_putchar
+
+    v_LPSTR v_gets(v_LPSTR s);
 
     int v_printf    (v_LPCSTR format, ...);
     int v_vprintf   (v_LPCSTR format, va_list va);

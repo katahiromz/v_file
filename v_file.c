@@ -1086,10 +1086,12 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
     void v_file_init_stdio(
         v_LPCVOID input_data, v_fpos_t input_size, v_LPCSTR modes)
     {
+#ifndef V_FILE_NEED_SPEED
         assert(modes);
         assert(input_data || input_size == 0);
         assert(strcmp(modes, "r") == 0 || strcmp(modes, "rb") == 0);
         v_file_destroy_stdio();
+#endif
         if (strchr(modes, 'b'))
             v_stdin = v_fopen_rb(input_data, input_size);
         else
@@ -1100,9 +1102,11 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
 
     void v_file_init_stdio_2(v_LPCSTR input_file_name, v_LPCSTR modes)
     {
+#ifndef V_FILE_NEED_SPEED
         assert(modes);
         assert(strcmp(modes, "r") == 0 || strcmp(modes, "rb") == 0);
         v_file_destroy_stdio();
+#endif
         if (input_file_name)
             v_stdin = v_fopen(input_file_name, modes);
         else
@@ -1144,27 +1148,37 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
             return v_fputc(c, v_stdout);
         }
 
-        v_LPSTR v_gets(v_LPSTR s)
-        {
-            size_t len;
-            assert(v_stdin);
-            assert(s);
-            s = v_fgets(s, v_FILE_MAX_BUFFER, v_stdin);
-            len = strlen(s);
-            if (len > 0 && s[len - 1] == '\n')
-                s[len - 1] = 0;
-            return s;
-        }
-
         int v_puts(v_LPCSTR s)
         {
-            assert(v_stdout);
-            assert(s);
+            assert(v_stdout && s);
+            if (v_stdout == NULL || s == NULL)
+                return v_EOF;
             v_fputs(s, v_stdout);
             v_putchar('\n');
-            return (v_stdout ? 0 : -1);
+            return 0;
         }
     #endif  /* ndef V_FILE_NEED_SPEED */
+
+    v_LPSTR v_gets(v_LPSTR s)
+    {
+        size_t len;
+
+#ifndef V_FILE_NEED_SPEED
+        assert(v_stdin && s);
+        if (v_stdin == NULL || s == NULL)
+        {
+            return NULL;
+        }
+#endif
+
+        s = v_fgets(s, v_FILE_MAX_BUFFER, v_stdin);
+        len = strlen(s);
+        if (len > 0 && s[len - 1] == '\n')
+        {
+            s[len - 1] = 0;
+        }
+        return s;
+    }
 
     int v_printf(v_LPCSTR format, ...)
     {

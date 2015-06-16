@@ -522,8 +522,8 @@ void v_file_test9(void)
     /*
      * v_file_init_stdio
      */
-    v_file_init_stdio("2\n4 2\nstr", 9, "rb");
-    assert(memcmp(v_stdin->data, "2\n4 2\nstr", 9) == 0);
+    v_file_init_stdio("2\n4 2\nstr\n", 10, "rb");
+    assert(memcmp(v_stdin->data, "2\n4 2\nstr\n", 10) == 0);
 
     k = v_scanf("%d", &m);
     assert(k == 1);
@@ -531,7 +531,7 @@ void v_file_test9(void)
     k = v_scanf("%d%lf", &n, &d);
     assert(k == 2);
     assert(n == 4 && d == 2.0);
-    assert(v_fgets(buf, 32, v_stdin));
+    assert(v_gets(buf));
     assert(strcmp(buf, "str") == 0);
 
     v_printf("This is standard output.\n");
