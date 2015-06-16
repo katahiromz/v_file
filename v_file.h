@@ -177,6 +177,12 @@ int         v_fclose(v_LPFILE fp);              /* will free fp->data  */
 v_LPCHAR    v_fclose_detach(v_LPFILE fp);       /* won't free fp->data */
 
 /**************************************************************************/
+/* binary mode / text mode */
+
+void v_fsetbin(v_FILE *fp);
+void v_fsettext(v_FILE *fp);
+
+/**************************************************************************/
 /* loading from real file / saving to real file */
 
 v_LPFILE        v_fopen(v_LPCSTR fname, v_LPCSTR modes);
@@ -279,8 +285,9 @@ int     v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list va);
     extern v_LPFILE v_stderr;
 
     /* initialize the v_file standard I/O */
-    void v_file_init_stdio(v_LPCVOID input_data, v_fpos_t input_size);
-    void v_file_init_stdio_2(v_LPCSTR input_file_name);
+    void v_file_init_stdio(
+        v_LPCVOID input_data, v_fpos_t input_size, v_LPCSTR modes);
+    void v_file_init_stdio_2(v_LPCSTR input_file_name, v_LPCSTR modes);
     /* destroy the v_file standard I/O */
     void v_file_destroy_stdio(void);
 
@@ -302,8 +309,8 @@ int     v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list va);
     int v_printf    (v_LPCSTR format, ...);
     int v_vprintf   (v_LPCSTR format, va_list va);
 
-    int v_scanf     (v_LPFILE fp, v_LPCSTR format, ...);
-    int v_vscanf    (v_LPFILE fp, v_LPCSTR format, va_list va);
+    int v_scanf     (v_LPCSTR format, ...);
+    int v_vscanf    (v_LPCSTR format, va_list va);
 #endif  /* def V_FILE_USE_STDIO */
 
 /**************************************************************************/

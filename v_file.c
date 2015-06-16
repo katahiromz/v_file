@@ -168,6 +168,21 @@ v_LPCHAR v_fclose_detach(v_LPFILE fp)
 }
 
 /**************************************************************************/
+/* binary mode / text mode */
+
+void v_fsetbin(v_FILE *fp)
+{
+    fp->modes &= ~v_FMODE_TEXT;
+    fp->modes |= v_FMODE_BINARY;
+}
+
+void v_fsettext(v_FILE *fp)
+{
+    fp->modes &= ~v_FMODE_BINARY;
+    fp->modes |= v_FMODE_TEXT;
+}
+
+/**************************************************************************/
 /* loading from real file / saving to real file */
 
 v_LPFILE v_fopen(v_LPCSTR fname, v_LPCSTR modes)
@@ -180,11 +195,8 @@ v_LPFILE v_fopen(v_LPCSTR fname, v_LPCSTR modes)
 
 #ifndef V_FILE_NEED_SPEED
     /* check parameters */
-    assert(fname);
-    if (fname == NULL)
-        return NULL;
-    assert(modes);
-    if (modes == NULL)
+    assert(fname && modes);
+    if (fname == NULL || modes == NULL)
         return NULL;
 #endif
 
@@ -279,11 +291,8 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp)
 
 #ifndef V_FILE_NEED_SPEED
         /* check parameters */
-        assert(fname);
-        if (fname == NULL)
-            return NULL;
-        assert(modes);
-        if (modes == NULL)
+        assert(fname && modes);
+        if (fname == NULL || modes == NULL)
             return NULL;
 #endif
 
@@ -1074,19 +1083,28 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
     v_LPFILE v_stderr = NULL;
 
     /* initialize the v_file standard I/O */
-    void v_file_init_stdio(v_LPCVOID input_data, v_fpos_t input_size)
+    void v_file_init_stdio(
+        v_LPCVOID input_data, v_fpos_t input_size, v_LPCSTR modes)
     {
-        v_stdin = v_fopen_rb(input_data, input_size);
+        assert(modes);
+        assert(input_data || input_size == 0);
+        v_file_destroy_stdio();
+        if (strchr(modes, 'b'))
+            v_stdin = v_fopen_rb(input_data, input_size);
+        else
+            v_stdin = v_fopen_r(input_data, input_size);
         v_stdout = v_fopen_wb();
         v_stderr = v_fopen_wb();
     }
 
-    void v_file_init_stdio_2(v_LPCSTR input_file_name)
+    void v_file_init_stdio_2(v_LPCSTR input_file_name, v_LPCSTR modes)
     {
+        assert(modes);
+        v_file_destroy_stdio();
         if (input_file_name)
-            v_stdin = v_fopen(input_file_name, "rb");
+            v_stdin = v_fopen(input_file_name, modes);
         else
-            v_stdin = v_fopen_rb(NULL, 0);
+            v_stdin = v_fopen_r(NULL, 0);
         v_stdout = v_fopen_wb();
         v_stderr = v_fopen_wb();
     }
@@ -1094,12 +1112,21 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
     /* destroy the v_file standard I/O */
     void v_file_destroy_stdio(void)
     {
-        v_fclose(v_stdin);
-        v_fclose(v_stdout);
-        v_fclose(v_stderr);
-        v_stdin = NULL;
-        v_stdout = NULL;
-        v_stderr = NULL;
+        if (v_stdin)
+        {
+            v_fclose(v_stdin);
+            v_stdin = NULL;
+        }
+        if (v_stdout)
+        {
+            v_fclose(v_stdout);
+            v_stdout = NULL;
+        }
+        if (v_stderr)
+        {
+            v_fclose(v_stderr);
+            v_stderr = NULL;
+        }
     }
 
     #ifndef V_FILE_NEED_SPEED
@@ -1117,13 +1144,20 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
 
         v_LPSTR v_gets(v_LPSTR s)
         {
+            size_t len;
             assert(v_stdin);
-            return v_fgets(s, v_FILE_MAX_BUFFER, v_stdin);
+            assert(s);
+            s = v_fgets(s, v_FILE_MAX_BUFFER, v_stdin);
+            len = strlen(s);
+            if (len > 0 && s[len - 1] == '\n')
+                s[len - 1] = 0;
+            return s;
         }
 
         int v_puts(v_LPCSTR s)
         {
             assert(v_stdout);
+            assert(s);
             v_fputs(s, v_stdout);
             v_putchar('\n');
             return (v_stdout ? 0 : -1);
@@ -1164,7 +1198,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
         return n;
     }
 
-    int v_scanf(v_LPFILE fp, v_LPCSTR format, ...)
+    int v_scanf(v_LPCSTR format, ...)
     {
         va_list va;
         int ret;
@@ -1183,7 +1217,7 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
         return ret;
     }
 
-    int v_vscanf(v_LPFILE fp, v_LPCSTR format, va_list va)
+    int v_vscanf(v_LPCSTR format, va_list va)
     {
         char buf[v_FILE_MAX_BUFFER];
 
