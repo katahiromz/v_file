@@ -655,6 +655,100 @@ void v_file_test9_linux(void)
     v_file_destroy_stdio();
 }
 
+void v_file_test_win32(void)
+{
+    OFSTRUCT ofs;
+    HFILE hf;
+    v_HFILE v_hf;
+    int n;
+    HANDLE hFile;
+    DWORD written;
+    v_LPFILE v_fp;
+
+    printf("\n[[ OF_EXIST ]]\n");
+    ZeroMemory(&ofs, sizeof(ofs));
+    hf = OpenFile("testdata\\data1.dat", &ofs, OF_EXIST);
+    printf("OpenFile: 0x%08X\n", hf);
+    ZeroMemory(&ofs, sizeof(ofs));
+    v_hf = v_OpenFile("testdata\\data1.dat", &ofs, OF_EXIST);
+    printf("v_OpenFile: 0x%p\n", (void *)v_hf);
+
+    printf("\n[[ OF_PARSE ]]\n");
+    ZeroMemory(&ofs, sizeof(ofs));
+    hf = OpenFile("testdata\\data1.dat", &ofs, OF_PARSE);
+    printf("OpenFile: 0x%08X\n", hf);
+    printf("cBytes: %d\n", ofs.cBytes);
+    printf("fFixedDisk: %d\n", ofs.fFixedDisk);
+    printf("nErrCode: %d\n", ofs.nErrCode);
+    printf("Reserved1: %d\n", ofs.Reserved1);
+    printf("Reserved2: %d\n", ofs.Reserved2);
+    printf("szPathName: %s\n", ofs.szPathName);
+    ZeroMemory(&ofs, sizeof(ofs));
+    v_hf = v_OpenFile("testdata\\data1.dat", &ofs, OF_PARSE);
+    printf("v_OpenFile: 0x%p\n", (void *)v_hf);
+    printf("cBytes: %d\n", ofs.cBytes);
+    printf("fFixedDisk: %d\n", ofs.fFixedDisk);
+    printf("nErrCode: %d\n", ofs.nErrCode);
+    printf("Reserved1: %d\n", ofs.Reserved1);
+    printf("Reserved2: %d\n", ofs.Reserved2);
+    printf("szPathName: %s\n", ofs.szPathName);
+
+    printf("\n[[ OF_PROMPT #1 ]]\n");
+    ZeroMemory(&ofs, sizeof(ofs));
+    hf = OpenFile("testdata\\data4.dat", &ofs, OF_PROMPT);
+    printf("OpenFile: 0x%08X\n", hf);
+    ZeroMemory(&ofs, sizeof(ofs));
+    v_hf = v_OpenFile("testdata\\data4.dat", &ofs, OF_PROMPT);
+    printf("v_OpenFile: 0x%p\n", (void *)v_hf);
+    n = _lclose(hf);
+    printf("_lclose: %d\n", n);
+    n = (int)v__lclose(v_hf);
+    printf("v__lclose: %d\n", n);
+
+    printf("\n[[ OF_CREATE ]]\n");
+    ZeroMemory(&ofs, sizeof(ofs));
+    hf = OpenFile("testdata\\data4.dat", &ofs, OF_CREATE);
+    printf("OpenFile: 0x%08X\n", hf);
+    n = _lclose(hf);
+    printf("_lclose: %d\n", n);
+    ZeroMemory(&ofs, sizeof(ofs));
+    v_hf = v_OpenFile("testdata\\data4.dat", &ofs, OF_CREATE);
+    printf("v_OpenFile: 0x%p\n", (void *)v_hf);
+	n = (int)v__lclose(v_hf);
+    printf("v__lclose: %d\n", n);
+
+    printf("\n[[ OF_PROMPT #2 ]]\n");
+    ZeroMemory(&ofs, sizeof(ofs));
+    hf = OpenFile("testdata\\data4.dat", &ofs, OF_PROMPT);
+    printf("OpenFile: 0x%08X\n", hf);
+    ZeroMemory(&ofs, sizeof(ofs));
+    v_hf = v_OpenFile("testdata\\data4.dat", &ofs, OF_PROMPT);
+    printf("v_OpenFile: 0x%p\n", (void *)v_hf);
+    n = _lclose(hf);
+    printf("_lclose: %d\n", n);
+	n = (int)v__lclose(v_hf);
+    printf("v__lclose: %d\n", n);
+
+    printf("\n[[ OF_DELETE ]]\n");
+    ZeroMemory(&ofs, sizeof(ofs));
+    hf = OpenFile("testdata\\data4.dat", &ofs, OF_DELETE);
+    printf("OpenFile: 0x%08X: %ld\n", hf, GetLastError());
+    ZeroMemory(&ofs, sizeof(ofs));
+    v_hf = v_OpenFile("testdata\\data4.dat", &ofs, OF_DELETE);
+    printf("v_OpenFile: 0x%p\n", (void *)v_hf);
+
+    printf("\n[[ v_CreateFileA ]]\n");
+    hFile = v_CreateFileA("testdata\\data4.dat", GENERIC_WRITE, 0,
+        NULL, CREATE_ALWAYS, 0, NULL);
+    printf("v_CreateFile: 0x%p\n", hFile);
+    n = v_WriteFile(hFile, "TEST\nOK\n", 8, &written, NULL);
+    printf("v_WriteFile: %d\n", n);
+    v_fp = (v_LPFILE)hFile;
+    assert(memcmp(v_fp->data, "TEST\nOK\n", 8) == 0);
+    n = v_CloseHandle(hFile);
+    printf("v_CloseHandle: %d\n", n);
+}
+
 /**************************************************************************/
 /* the main function for testing */
 
@@ -680,6 +774,9 @@ int main(void)
         v_file_test7_linux();
         v_file_test8();
         v_file_test9_linux();
+    #endif
+    #ifdef _WIN32
+        v_file_test_win32();
     #endif
     return 0;
 }

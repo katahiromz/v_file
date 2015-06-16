@@ -520,10 +520,14 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
     v_HFILE WINAPI v_OpenFile(LPCSTR fname, LPOFSTRUCT pofs, UINT style)
     {
         v_LPFILE fp;
+        CHAR fullname[MAX_PATH];
+        static LPOFSTRUCT s_ofsOld = NULL;
 
         assert(fname && pofs);
         if (fname == NULL || pofs == NULL)
             return v_HFILE_ERROR;
+        GetFullPathNameA(fname, MAX_PATH, fullname, NULL);
+        lstrcpynA(pofs->szPathName, fullname, OFS_MAXPATHNAME);
 
         if (style & OF_DELETE)
             return (v_HFILE)DeleteFileA(fname);
@@ -531,9 +535,6 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
             return v_fopen_wb();
         if (style & OF_PARSE)
         {
-            ZeroMemory(pofs, sizeof(*pofs));
-            pofs->cBytes = sizeof(*pofs);
-            lstrcpynA(pofs->szPathName, fname, OFS_MAXPATHNAME);
             return NULL;
         }
         if (style & OF_EXIST)
@@ -559,14 +560,14 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
                     lstrcpyA(title, p);
                     lstrcatA(title, " - The file is not found");
                     lstrcpyA(text, "File ");
-                    lstrcatA(text, fname);
-                    lstrcpyA(text, " doesn't exist.");
+                    lstrcatA(text, fullname);
+                    lstrcatA(text, " doesn't exist.");
                 #else
                     lstrcpyA(title, p);
                     lstrcatA(title, " - ファイルが見つかりません");
                     lstrcpyA(text, "ファイル ");
-                    lstrcatA(text, fname);
-                    lstrcpyA(text, " は存在しません。");
+                    lstrcatA(text, fullname);
+                    lstrcatA(text, " は存在しません。");
                 #endif
                 if (MessageBoxA(NULL, text, title,
                                 MB_ICONERROR | MB_RETRYCANCEL) == IDCANCEL)
@@ -578,8 +579,26 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
 
         if (style & OF_REOPEN)
         {
-            /* TODO & FIXME */
-            assert(0);
+            if (s_ofsOld == pofs)
+            {
+                fp = NULL;
+                CopyMemory(&fp, &pofs->Reserved1, sizeof(DWORD));
+                if (fp == NULL)
+                    return v_HFILE_ERROR;
+                switch (style & 3)
+                {
+                case OF_READ:
+                    fp->modes = v_FMODE_READ | v_FMODE_BINARY;
+                    break;
+                case OF_WRITE:
+                    fp->modes = v_FMODE_WRITE | v_FMODE_BINARY;
+                    break;
+                case OF_READWRITE:
+                    fp->modes = v_FMODE_READWRITE | v_FMODE_BINARY;
+                    break;
+                }
+                return fp;
+            }
             return v_HFILE_ERROR;
         }
 
@@ -603,6 +622,8 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
         }
         if (fp == NULL)
             fp = v_HFILE_ERROR;
+        s_ofsOld = pofs;
+        CopyMemory(&pofs->Reserved1, &fp, sizeof(DWORD));
         return fp;
     }
 #endif  /* (defined(WIN16) || defined(_WIN32)) */
