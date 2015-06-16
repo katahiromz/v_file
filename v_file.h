@@ -101,6 +101,8 @@ extern "C"
 /* virtual "fpos_t" type */
 #if defined(_WIN64) || defined(__x86_64__) || defined(__ppc64__)
     typedef unsigned long long  v_fpos_t;
+#elif defined(MSDOS) || defined(WIN16)
+    typedef unsigned int        v_fpos_t;
 #else
     typedef unsigned long       v_fpos_t;
 #endif
