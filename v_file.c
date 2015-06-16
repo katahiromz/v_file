@@ -145,8 +145,7 @@ v_LPFILE v_fopen_wb(void)
 
 int v_fclose(v_LPFILE fp)
 {
-    assert(fp);
-    if (fp)
+    if (fp && fp != v_HFILE_ERROR)
     {
         free(fp->data);
         free(fp);
@@ -158,8 +157,8 @@ int v_fclose(v_LPFILE fp)
 v_LPCHAR v_fclose_detach(v_LPFILE fp)
 {
     v_LPCHAR data = NULL;
-    assert(fp);
-    if (fp)
+    assert(fp && fp != v_HFILE_ERROR);
+    if (fp && fp != v_HFILE_ERROR)
     {
         data = fp->data;
         free(fp);
@@ -172,14 +171,26 @@ v_LPCHAR v_fclose_detach(v_LPFILE fp)
 
 void v_fsetbin(v_FILE *fp)
 {
-    fp->modes &= ~v_FMODE_TEXT;
-    fp->modes |= v_FMODE_BINARY;
+#ifndef V_FILE_NEED_SPEED
+    assert(fp && fp != v_HFILE_ERROR);
+    if (fp && fp != v_HFILE_ERROR)
+#endif
+    {
+        fp->modes &= ~v_FMODE_TEXT;
+        fp->modes |= v_FMODE_BINARY;
+    }
 }
 
 void v_fsettext(v_FILE *fp)
 {
-    fp->modes &= ~v_FMODE_BINARY;
-    fp->modes |= v_FMODE_TEXT;
+#ifndef V_FILE_NEED_SPEED
+    assert(fp && fp != v_HFILE_ERROR);
+    if (fp && fp != v_HFILE_ERROR)
+#endif
+    {
+        fp->modes &= ~v_FMODE_BINARY;
+        fp->modes |= v_FMODE_TEXT;
+    }
 }
 
 /**************************************************************************/
@@ -694,8 +705,8 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
     {
         v_FILE *fp = (v_FILE *)hFile;
 #ifndef V_FILE_NEED_SPEED
-        assert(fp && read);
-        if (fp == NULL || read == NULL)
+        assert(fp && fp != v_HFILE_ERROR && read);
+        if (fp == NULL || fp == v_HFILE_ERROR || read == NULL)
             return FALSE;
 #endif
         *read = (DWORD)v_fread_raw(pBuf, 1, to_read, fp);
@@ -707,8 +718,8 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
     {
         v_FILE *fp = (v_FILE *)hFile;
 #ifndef V_FILE_NEED_SPEED
-        assert(fp && written);
-        if (fp == NULL || written == NULL)
+        assert(fp && fp != v_HFILE_ERROR && written);
+        if (fp == NULL || fp == v_HFILE_ERROR  || written == NULL)
             return FALSE;
 #endif
         *written = (DWORD)v_fwrite_raw(pBuf, 1, to_write, fp);
@@ -727,8 +738,8 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
         DWORDLONG size;
 
 #ifndef V_FILE_NEED_SPEED
-        assert(fp);
-        if (fp == NULL)
+        assert(fp || fp != v_HFILE_ERROR);
+        if (fp == NULL || fp == v_HFILE_ERROR)
         {
             SetLastError(ERROR_INVALID_HANDLE);
             return 0xFFFFFFFF;
@@ -758,8 +769,8 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
         v_FILE *fp = (v_FILE *)hFile;
 
 #ifndef V_FILE_NEED_SPEED
-        assert(fp);
-        if (fp == NULL)
+        assert(fp && fp != v_HFILE_ERROR);
+        if (fp == NULL || fp == v_HFILE_ERROR)
             return FALSE;
 #endif
         fp->size = fp->index;
@@ -774,8 +785,8 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
 
 #ifndef V_FILE_NEED_SPEED
         /* check paramters */
-        assert(fp);
-        if (fp == NULL)
+        assert(fp && fp != v_HFILE_ERROR);
+        if (fp == NULL || fp == v_HFILE_ERROR)
         {
             SetLastError(ERROR_INVALID_HANDLE);
             return 0xFFFFFFFF;
@@ -976,8 +987,8 @@ int v_fputc(char c, v_LPFILE fp)
 {
 #ifndef V_FILE_NEED_SPEED
     /* check parameter */
-    assert(fp);
-    if (fp == NULL)
+    assert(fp && fp != v_HFILE_ERROR);
+    if (fp == NULL || fp == v_HFILE_ERROR)
         return v_EOF;
 #endif
 
@@ -1012,8 +1023,8 @@ size_t v_fread(v_LPVOID ptr, size_t siz, size_t nelem, v_LPFILE fp)
 
 #ifndef V_FILE_NEED_SPEED
     /* check parameters */
-    assert(fp);
-    if (fp == NULL)
+    assert(fp && fp != v_HFILE_ERROR);
+    if (fp == NULL || fp == v_HFILE_ERROR)
         return 0;
     if ((fp->modes & v_FMODE_READ) == 0)
         return 0;
@@ -1059,8 +1070,8 @@ size_t v_fwrite(v_LPCVOID ptr, size_t siz, size_t nelem, v_LPFILE fp)
 
 #ifndef V_FILE_NEED_SPEED
     /* check parameters */
-    assert(fp);
-    if (fp == NULL)
+    assert(fp && fp != v_HFILE_ERROR);
+    if (fp == NULL || fp == v_HFILE_ERROR)
         return 0;
     if ((fp->modes & v_FMODE_WRITE) == 0)
         return 0;
@@ -1104,8 +1115,8 @@ int v_feof(v_LPFILE fp)
 
 int v_ferror(v_LPFILE fp)
 {
-    assert(fp);
-    if (fp == NULL)
+    assert(fp && fp != v_HFILE_ERROR);
+    if (fp == NULL || fp == v_HFILE_ERROR)
         return v_EOF;
     if (fp->size < fp->index)
         return v_EOF;
@@ -1116,9 +1127,9 @@ int v_ferror(v_LPFILE fp)
 
 void v_clearerr(v_LPFILE fp)
 {
-    assert(fp);
+    assert(fp && fp != v_HFILE_ERROR);
 #ifndef V_FILE_NEED_SPEED
-    if (fp == NULL)
+    if (fp == NULL || fp == v_HFILE_ERROR)
         return;
 #endif
     fp->modes &= ~v_FMODE_ERROR;
@@ -1191,8 +1202,8 @@ void v_rewind(v_LPFILE fp)
 int v_fseek(v_LPFILE fp, long offset, int type)
 {
 #ifndef V_FILE_NEED_SPEED
-    assert(fp);
-    if (fp == NULL)
+    assert(fp && fp != v_HFILE_ERROR);
+    if (fp == NULL || fp == v_HFILE_ERROR)
         return v_EOF;
 #endif
 
@@ -1245,8 +1256,8 @@ int v_fseek(v_LPFILE fp, long offset, int type)
 int v_ungetc(char c, v_LPFILE fp)
 {
 #ifndef V_FILE_NEED_SPEED
-    assert(fp);
-    if (fp == NULL)
+    assert(fp && fp != v_HFILE_ERROR);
+    if (fp == NULL || fp == v_HFILE_ERROR)
         return v_EOF;
     if (v_ferror(fp))
         return v_EOF;
@@ -1285,9 +1296,7 @@ v_LPSTR v_fgets(v_LPSTR s, int n, v_LPFILE fp)
 
 #ifndef V_FILE_NEED_SPEED
     /* check parameters */
-    if (n == 0)
-        return NULL;
-    if (fp == NULL)
+    if (n == 0 || fp == NULL || fp == v_HFILE_ERROR)
         return NULL;
 #endif
 
@@ -1337,8 +1346,8 @@ int v_fputs(v_LPCSTR s, v_LPFILE fp)
 
 #ifndef V_FILE_NEED_SPEED
     /* check parameters */
-    assert(s && fp);
-    if (s == NULL || fp == NULL)
+    assert(s && fp && fp != v_HFILE_ERROR);
+    if (s == NULL || fp == NULL || fp == v_HFILE_ERROR)
         return v_EOF;
 #endif
 
@@ -1383,8 +1392,8 @@ int v_fscanf(v_LPFILE fp, v_LPCSTR format, ...)
 
 #ifndef V_FILE_NEED_SPEED
     /* check parameters */
-    assert(fp && format);
-    if (fp == NULL || format == NULL)
+    assert(fp && fp != v_HFILE_ERROR && format);
+    if (fp == NULL || fp == v_HFILE_ERROR || format == NULL)
         return v_EOF;
 #endif
 
@@ -1401,8 +1410,8 @@ int v_vfscanf(v_LPFILE fp, v_LPCSTR format, va_list va)
 
 #ifndef V_FILE_NEED_SPEED
     /* check parameters */
-    assert(fp && format);
-    if (fp == NULL || format == NULL)
+    assert(fp && fp != v_HFILE_ERROR && format);
+    if (fp == NULL || fp == v_HFILE_ERROR || format == NULL)
         return v_EOF;
 #endif
 
@@ -1425,8 +1434,8 @@ int v_fprintf(v_LPFILE fp, v_LPCSTR format, ...)
 
 #ifndef V_FILE_NEED_SPEED
     /* check parameters */
-    assert(fp && format);
-    if (fp == NULL || format == NULL)
+    assert(fp && fp != v_HFILE_ERROR && format);
+    if (fp == NULL || fp == v_HFILE_ERROR || format == NULL)
         return v_EOF;
 #endif
 
@@ -1445,8 +1454,8 @@ int v_vfprintf(v_LPFILE fp, v_LPCSTR format, va_list va)
 
 #ifndef V_FILE_NEED_SPEED
     /* check parameters */
-    assert(fp && format);
-    if (fp == NULL || format == NULL)
+    assert(fp && fp != v_HFILE_ERROR && format);
+    if (fp == NULL || fp == v_HFILE_ERROR || format == NULL)
         return v_EOF;
 #endif
 

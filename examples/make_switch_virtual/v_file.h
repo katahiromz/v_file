@@ -100,7 +100,7 @@ extern "C"
 
 /* virtual "fpos_t" type */
 #if defined(_WIN64) || defined(__x86_64__) || defined(__ppc64__)
-    typedef unsigned long long      v_fpos_t;
+    typedef unsigned __int64        v_fpos_t;
 #elif defined(MSDOS) || defined(WIN16)
     typedef unsigned int            v_fpos_t;
 #elif defined(WIN32)
@@ -150,11 +150,11 @@ typedef struct v_FILE
     typedef v_FILE *            v_LPFILE;
 #endif
 
-/* virtual HFILE and HFILE_ERROR */
-#if (defined(WIN16) || defined(_WIN32))
-    typedef v_LPFILE            v_HFILE;
-    #define v_HFILE_ERROR       ((v_HFILE)INVALID_HANDLE_VALUE)
-#endif
+/* virtual HFILE */
+typedef v_LPFILE                v_HFILE;
+
+/* virtual HFILE_ERROR */
+#define v_HFILE_ERROR           ((v_HFILE)-1)
 
 /**************************************************************************/
 /* opening / closing */
