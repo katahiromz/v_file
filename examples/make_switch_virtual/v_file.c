@@ -380,11 +380,477 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
 #endif  /* def _WIN32 */
 
 /**************************************************************************/
+/* Windows file operation */
+
+#if (defined(WIN16) || defined(_WIN32))
+    v_HFILE WINAPI v__lcreat(LPCSTR fname, int attr)
+    {
+        v_HFILE hf;
+        if (attr & 1)
+            hf = v_fopen(fname, "rb");
+        else
+            hf = v_fopen(fname, "wb");
+        if (hf == NULL)
+            hf = v_HFILE_ERROR;
+        return hf;
+    }
+
+    v_HFILE WINAPI v__lopen(LPCSTR fname, int attr)
+    {
+        v_HFILE hf;
+        switch (attr & 3)
+        {
+        case OF_READ:
+            hf = v_fopen(fname, "rb");
+            break;
+        case OF_WRITE:
+            hf = v_fopen(fname, "wb");
+            break;
+        case OF_READWRITE:
+            hf = v_fopen(fname, "r+b");
+            break;
+        default:
+            hf = NULL;
+            assert(0);
+        }
+        if (hf == NULL)
+            hf = v_HFILE_ERROR;
+        return hf;
+    }
+
+    LONG WINAPI v__llseek(v_HFILE hf, LONG offset, int origin)
+    {
+        if (hf != NULL && hf != v_HFILE_ERROR)
+        {
+            switch (origin)
+            {
+            case FILE_BEGIN:
+                if (v_fseek(hf, offset, v_SEEK_SET) == 0)
+                {
+                    return (LONG)hf->index;
+                }
+                break;
+            case FILE_CURRENT:
+                if (v_fseek(hf, offset, v_SEEK_CUR) == 0)
+                {
+                    return (LONG)hf->index;
+                }
+                break;
+            case FILE_END:
+                if (v_fseek(hf, offset, v_SEEK_END) == 0)
+                {
+                    return (LONG)hf->index;
+                }
+                break;
+            default:
+                assert(0);
+            }
+        }
+        return 0xFFFFFFFF;
+    }
+
+    UINT WINAPI v__lread(v_HFILE hf, LPVOID buffer, UINT cb)
+    {
+        UINT read;
+        if (hf && hf != v_HFILE_ERROR)
+        {
+            read = (UINT)v_fread(buffer, 1, cb, hf);
+            if (read)
+                return read;
+        }
+        return 0xFFFFFFFF;
+    }
+
+    UINT WINAPI v__lwrite(v_HFILE hf, LPCSTR buffer, UINT cb)
+    {
+        UINT written;
+        if (hf && hf != v_HFILE_ERROR)
+        {
+            written = (UINT)v_fwrite(buffer, 1, cb, hf);
+            if (written)
+                return written;
+        }
+        return 0xFFFFFFFF;
+    }
+
+    v_HFILE WINAPI v__lclose(v_HFILE hf)
+    {
+        if (hf != NULL && hf != v_HFILE_ERROR)
+        {
+            v_CloseHandle(hf);
+            return NULL;
+        }
+        return v_HFILE_ERROR;
+    }
+#endif  /* (defined(WIN16) || defined(_WIN32)) */
+
+#ifdef WIN16
+    v_HFILE WINAPI v_OpenFile16(LPCSTR fname, LPOFSTRUCT pos, UINT style)
+    {
+        /* FIXME */
+        assert(0);
+        return 0;
+    }
+
+    HANDLE WINAPI v_CreateFile16(LPCSTR fname, DWORD access, DWORD share,
+                                 LPVOID sa, DWORD creation, DWORD flags,
+                                 HANDLE hTempFile)
+    {
+        v_LPFILE fp;
+        #ifdef V_FILE_USE_STDIO
+            if (lstrcmpiA(fname, "CON") == 0)
+            {
+                if (access & GENERIC_READ)
+                    return v_stdin;
+                if (access & GENERIC_WRITE)
+                    return v_stdout;
+                return NULL;
+            }
+            if (lstrcmpiA(fname, "CONIN$") == 0)
+            {
+                return v_stdin;
+            }
+            if (lstrcmpiA(fname, "CONOUT$") == 0)
+            {
+                return v_stdout;
+            }
+        #endif  /* def V_FILE_USE_STDIO */
+        fp = NULL;
+        if ((access & GENERIC_READ) && (access & GENERIC_WRITE))
+        {
+            if (creation == CREATE_NEW || creation == CREATE_ALWAYS ||
+                creation == TRUNCATE_EXISTING)
+            {
+                fp = v_fopen(fname, "w+b");
+            }
+            else if (creation == OPEN_EXISTING)
+            {
+                fp = v_fopen(fname, "r+b");
+            }
+            else if (creation == OPEN_ALWAYS)
+            {
+                fp = v_fopen(fname, "r+b");
+                if (fp == NULL)
+                    fp = v_fopen_wb();
+            }
+        }
+        else if (access & GENERIC_WRITE)
+        {
+            if (creation == CREATE_NEW || creation == CREATE_ALWAYS ||
+                creation == TRUNCATE_EXISTING)
+            {
+                fp = v_fopen(fname, "wb");
+            }
+        }
+        else if (access & GENERIC_READ)
+        {
+            if (creation == OPEN_EXISTING)
+            {
+                fp = v_fopen(fname, "rb");
+            }
+        }
+        return fp;
+    }
+#endif  /* def WIN16 */
+
+#ifdef _WIN32
+    HANDLE WINAPI v_CreateFileA(LPCSTR fname, DWORD access, DWORD share,
+                                LPVOID sa, DWORD creation, DWORD flags,
+                                HANDLE hTempFile)
+    {
+        v_LPFILE fp;
+        #ifdef V_FILE_USE_STDIO
+            if (lstrcmpiA(fname, "CON") == 0)
+            {
+                if (access & GENERIC_READ)
+                    return v_stdin;
+                if (access & GENERIC_WRITE)
+                    return v_stdout;
+                return NULL;
+            }
+            if (lstrcmpiA(fname, "CONIN$") == 0)
+            {
+                return v_stdin;
+            }
+            if (lstrcmpiA(fname, "CONOUT$") == 0)
+            {
+                return v_stdout;
+            }
+        #endif  /* def V_FILE_USE_STDIO */
+        fp = NULL;
+        if ((access & GENERIC_READ) && (access & GENERIC_WRITE))
+        {
+            if (creation == CREATE_NEW || creation == CREATE_ALWAYS ||
+                creation == TRUNCATE_EXISTING)
+            {
+                fp = v_fopen(fname, "w+b");
+            }
+            else if (creation == OPEN_EXISTING)
+            {
+                fp = v_fopen(fname, "r+b");
+            }
+            else if (creation == OPEN_ALWAYS)
+            {
+                fp = v_fopen(fname, "r+b");
+                if (fp == NULL)
+                    fp = v_fopen_wb();
+            }
+        }
+        else if (access & GENERIC_WRITE)
+        {
+            if (creation == CREATE_NEW || creation == CREATE_ALWAYS ||
+                creation == TRUNCATE_EXISTING)
+            {
+                fp = v_fopen(fname, "wb");
+            }
+        }
+        else if (access & GENERIC_READ)
+        {
+            if (creation == OPEN_EXISTING)
+            {
+                fp = v_fopen(fname, "rb");
+            }
+        }
+        return fp;
+    }
+
+    HANDLE WINAPI v_CreateFileW(LPCWSTR fname, DWORD access, DWORD share,
+                                LPVOID sa, DWORD creation, DWORD flags,
+                                HANDLE hTempFile)
+    {
+        v_LPFILE fp;
+        #ifdef V_FILE_USE_STDIO
+            /* is it console I/O? */
+            if (lstrcmpiW(fname, L"CON") == 0)
+            {
+                if (access & GENERIC_WRITE)
+                    return v_stdout;
+                if (access & GENERIC_READ)
+                    return v_stdin;
+                return NULL;
+            }
+            if (lstrcmpiW(fname, L"CONIN$") == 0)
+            {
+                return v_stdin;
+            }
+            if (lstrcmpiW(fname, L"CONOUT$") == 0)
+            {
+                return v_stdout;
+            }
+        #endif  /* def V_FILE_USE_STDIO */
+        fp = NULL;
+        if ((access & GENERIC_READ) && (access & GENERIC_WRITE))
+        {
+            if (creation == CREATE_NEW || creation == CREATE_ALWAYS ||
+                creation == TRUNCATE_EXISTING)
+            {
+                fp = v_wfopen(fname, L"w+b");
+            }
+            else if (creation == OPEN_EXISTING)
+            {
+                fp = v_wfopen(fname, L"r+b");
+            }
+            else if (creation == OPEN_ALWAYS)
+            {
+                fp = v_wfopen(fname, L"r+b");
+                if (fp == NULL)
+                    fp = v_fopen_wb();
+            }
+        }
+        else if (access & GENERIC_WRITE)
+        {
+            if (creation == CREATE_NEW || creation == CREATE_ALWAYS ||
+                creation == TRUNCATE_EXISTING)
+            {
+                fp = v_wfopen(fname, L"wb");
+            }
+        }
+        else if (access & GENERIC_READ)
+        {
+            if (creation == OPEN_EXISTING)
+            {
+                fp = v_wfopen(fname, L"rb");
+            }
+        }
+        return fp;
+    }
+
+    v_HFILE WINAPI v_OpenFile32(LPCSTR fname, LPOFSTRUCT pos, UINT style)
+    {
+        /* FIXME */
+        assert(0);
+        return 0;
+    }
+
+    BOOL WINAPI v_CloseHandle(HANDLE hFile)
+    {
+        v_FILE *fp = (v_FILE *)hFile;
+        assert(fp);
+        return v_fclose(fp) == 0;
+    }
+
+    BOOL WINAPI v_ReadFile(HANDLE hFile, LPVOID pBuf, DWORD to_read,
+                           LPDWORD read, LPVOID o)
+    {
+        v_FILE *fp = (v_FILE *)hFile;
+#ifndef V_FILE_NEED_SPEED
+        assert(fp && read);
+        if (fp == NULL || read == NULL)
+            return FALSE;
+#endif
+        *read = (DWORD)v_fread_raw(pBuf, 1, to_read, fp);
+        return *read > 0;
+    }
+
+    BOOL WINAPI v_WriteFile(HANDLE hFile, LPCVOID pBuf, DWORD to_write,
+                            LPDWORD written, LPVOID o)
+    {
+        v_FILE *fp = (v_FILE *)hFile;
+#ifndef V_FILE_NEED_SPEED
+        assert(fp && written);
+        if (fp == NULL || written == NULL)
+            return FALSE;
+#endif
+        *written = (DWORD)v_fwrite_raw(pBuf, 1, to_write, fp);
+        return *written > 0;
+    }
+
+    BOOL WINAPI v_FlushFileBuffer(HANDLE hFile)
+    {
+        v_FILE *fp = (v_FILE *)hFile;
+        return v_fflush(fp) == 0;
+    }
+
+    DWORD WINAPI v_GetFileSize(HANDLE hFile, LPDWORD hi)
+    {
+        v_FILE *fp = (v_FILE *)hFile;
+        DWORDLONG size;
+
+#ifndef V_FILE_NEED_SPEED
+        assert(fp);
+        if (fp == NULL)
+        {
+            SetLastError(ERROR_INVALID_HANDLE);
+            return 0xFFFFFFFF;
+        }
+#endif
+        size = fp->size;
+        if (hi)
+        {
+            *hi = (DWORD)(size >> 32);
+            SetLastError(NO_ERROR);
+            return (DWORD)size;
+        }
+        else if (size > 0xFFFFFFFF)
+        {
+            SetLastError(ERROR_MORE_DATA);
+            return 0xFFFFFFFF;
+        }
+        else
+        {
+            SetLastError(NO_ERROR);
+            return (DWORD)size;
+        }
+    }
+
+    BOOL WINAPI v_SetEndOfFile(HANDLE hFile)
+    {
+        v_FILE *fp = (v_FILE *)hFile;
+
+#ifndef V_FILE_NEED_SPEED
+        assert(fp);
+        if (fp == NULL)
+            return FALSE;
+#endif
+        fp->size = fp->index;
+        return TRUE;
+    }
+
+    DWORD WINAPI v_SetFilePointer(HANDLE hFile, LONG lo, PLONG hi,
+                                  DWORD method)
+    {
+        LONGLONG offset;
+        v_FILE *fp = (v_FILE *)hFile;
+
+#ifndef V_FILE_NEED_SPEED
+        /* check paramters */
+        assert(fp);
+        if (fp == NULL)
+        {
+            SetLastError(ERROR_INVALID_HANDLE);
+            return 0xFFFFFFFF;
+        }
+#endif
+
+        /* calculcate practical offset */
+        if (hi)
+            offset = lo | (((LONGLONG)*hi) << 32);
+        else
+            offset = lo;
+
+        switch (method)
+        {
+        case FILE_BEGIN:
+            if (offset >= 0)
+            {
+                if (fp->index + offset <= fp->size)
+                    fp->index += (long)offset;
+                else
+                    fp->index = fp->size;
+            }
+            else
+            {
+                if ((v_fpos_t)-offset <= fp->index)
+                    fp->index += (long)offset;
+                else
+                    fp->index = 0;
+            }
+            break;
+        case FILE_CURRENT:
+            assert(fp->size <= 0x7FFFFFFF);
+            if ((v_fpos_t)offset <= fp->size)
+                fp->index = (v_fpos_t)(fp->size - offset);
+            else
+                fp->index = 0;
+            break;
+        case FILE_END:
+            assert(fp->size <= 0x7FFFFFFF);
+            if ((v_fpos_t)offset <= fp->size)
+                fp->index = (v_fpos_t)offset;
+            else
+                fp->index = fp->size;
+            break;
+        default:
+            assert(0);
+            return 0xFFFFFFFF;
+        }
+
+        if (hi)
+        {
+            /* store high */
+            *hi = (DWORD)(fp->index >> 32);
+            SetLastError(NO_ERROR);
+        }
+        else if (fp->index > 0xFFFFFFFF)
+        {
+            /* cannot store high */
+            SetLastError(ERROR_MORE_DATA);
+        }
+        else
+        {
+            /* no high required */
+            SetLastError(NO_ERROR);
+        }
+        return (DWORD)(fp->index & 0xFFFFFFFF);
+    }
+#endif  /* def _WIN32 */
+
+/**************************************************************************/
 /* binary transfer */
 
 size_t v_fread_raw(v_LPVOID ptr, size_t siz, size_t nelem, v_LPFILE fp)
 {
-	v_fpos_t count, read_size;
+    v_fpos_t count, read_size;
     v_LPCHAR pch;
 
 #ifndef V_FILE_NEED_SPEED
@@ -411,20 +877,20 @@ size_t v_fread_raw(v_LPVOID ptr, size_t siz, size_t nelem, v_LPFILE fp)
     /* retrieve the current position */
     /* copy to buffer */
     read_size = count * siz;
-    pch = (v_LPCHAR)fp->data + fp->index;
-    memcpy(ptr, pch, read_size);
+    pch = (v_LPCHAR)fp->data + (size_t)fp->index;
+    memcpy(ptr, pch, (size_t)read_size);
 
     /* proceed the position */
     fp->index += read_size;
 
     /* return the count of blocks read */
-    return count;
+    return (size_t)count;
 }
 
 size_t v_fwrite_raw(v_LPCVOID ptr, size_t siz, size_t nelem, v_LPFILE fp)
 {
-	size_t increment;
-	v_fpos_t end;
+    size_t increment;
+    v_fpos_t end;
     v_LPCHAR pch;
 
 #ifndef V_FILE_NEED_SPEED
@@ -443,7 +909,7 @@ size_t v_fwrite_raw(v_LPCVOID ptr, size_t siz, size_t nelem, v_LPFILE fp)
     end = fp->index + increment;
     if (end > fp->size)
     {
-        v_LPVOID data = realloc(fp->data, end + 1);
+        v_LPVOID data = realloc(fp->data, (size_t)(end + 1));
         if (data == NULL)
         {
             fp->modes |= v_FMODE_ERROR;
@@ -452,12 +918,12 @@ size_t v_fwrite_raw(v_LPCVOID ptr, size_t siz, size_t nelem, v_LPFILE fp)
 
         fp->data = (v_LPCHAR)data;
         fp->size = end;
-        fp->data[end] = 0;
+        fp->data[(size_t)end] = 0;
     }
 
     /* retrieve the current position */
     /* copy from buffer */
-    pch = (v_LPCHAR)fp->data + fp->index;
+    pch = (v_LPCHAR)fp->data + (size_t)fp->index;
     memcpy(pch, ptr, increment);
 
     /* proceed the position */
@@ -490,7 +956,7 @@ int v_fgetc(v_LPFILE fp)
 #endif
     {
         /* binary mode */
-        ch = *(fp->data + fp->index);
+        ch = *(fp->data + (size_t)fp->index);
         fp->index += sizeof(char);
         return ch;
     }
@@ -499,7 +965,7 @@ int v_fgetc(v_LPFILE fp)
     /* text mode: eat every '\r' */
     do
     {
-        ch = *(fp->data + fp->index);
+        ch = *(fp->data + (size_t)fp->index);
         fp->index += sizeof(char);
     } while (ch == '\r' && fp->index + sizeof(char) <= fp->size);
     return ch;
@@ -805,7 +1271,7 @@ int v_ungetc(char c, v_LPFILE fp)
 
     /* undo */
     fp->index -= sizeof(char);
-    *((v_LPCHAR)fp->data + fp->index) = c;
+    *((v_LPCHAR)fp->data + (size_t)fp->index) = c;
     return c;
 }
 

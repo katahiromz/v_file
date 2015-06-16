@@ -99,15 +99,14 @@ extern "C"
 #endif
 
 /* virtual "fpos_t" type */
-typedef size_t                  v_fpos_t;
-#if 0
-    #if defined(_WIN64) || defined(__x86_64__) || defined(__ppc64__)
-        typedef unsigned long long  v_fpos_t;
-    #elif defined(MSDOS) || defined(WIN16)
-        typedef unsigned int        v_fpos_t;
-    #else
-        typedef unsigned long       v_fpos_t;
-    #endif
+#if defined(_WIN64) || defined(__x86_64__) || defined(__ppc64__)
+    typedef unsigned long long      v_fpos_t;
+#elif defined(MSDOS) || defined(WIN16)
+    typedef unsigned int            v_fpos_t;
+#elif defined(WIN32)
+    typedef unsigned __int64        v_fpos_t;
+#else
+    typedef unsigned long           v_fpos_t;
 #endif
 
 /* virtual pointer types */
@@ -149,6 +148,12 @@ typedef struct v_FILE
     typedef v_FILE FAR *        v_LPFILE;
 #else
     typedef v_FILE *            v_LPFILE;
+#endif
+
+/* virtual HFILE and HFILE_ERROR */
+#if (defined(WIN16) || defined(_WIN32))
+    typedef v_LPFILE            v_HFILE;
+    #define v_HFILE_ERROR       ((v_HFILE)INVALID_HANDLE_VALUE)
 #endif
 
 /**************************************************************************/
@@ -205,6 +210,59 @@ int             v_fsave (v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes);
 #ifdef _WIN32
     v_LPFILE    v_wfopen(v_LPCWSTR fname, v_LPCWSTR modes);
     int         v_wfsave(v_LPCWSTR fname, v_LPFILE v_fp, v_LPCWSTR modes);
+#endif
+
+/**************************************************************************/
+/* Windows file operation */
+
+#if (defined(WIN16) || defined(_WIN32))
+    /* common functions */
+    v_HFILE WINAPI v__lcreat(LPCSTR fname, int attr);
+    v_HFILE WINAPI v__lopen(LPCSTR fname, int attr);
+    LONG WINAPI v__llseek(v_HFILE hf, LONG offset, int origin);
+    UINT WINAPI v__lread(v_HFILE hf, LPVOID buffer, UINT cb);
+    UINT WINAPI v__lwrite(v_HFILE hf, LPCSTR buffer, UINT cb);
+    v_HFILE WINAPI v__lclose(v_HFILE hf);
+#endif  /* (defined(WIN16) || defined(_WIN32)) */
+
+#ifdef WIN16
+    v_HFILE WINAPI v_OpenFile16(LPCSTR fname, LPOFSTRUCT pos, UINT style);
+    HANDLE  WINAPI v_CreateFile16(LPCSTR fname, DWORD access, DWORD share,
+                                  LPVOID sa, DWORD creation, DWORD flags,
+                                  HANDLE hTempFile);
+#endif
+
+#ifdef _WIN32
+    HANDLE WINAPI  v_CreateFileA(LPCSTR fname, DWORD access, DWORD share,
+                                 LPVOID sa, DWORD creation, DWORD flags,
+                                 HANDLE hTempFile);
+    HANDLE WINAPI  v_CreateFileW(LPCWSTR fname, DWORD access, DWORD share,
+                                 LPVOID sa, DWORD creation, DWORD flags,
+                                 HANDLE hTempFile);
+    v_HFILE WINAPI v_OpenFile32(LPCSTR fname, LPOFSTRUCT pos, UINT style);
+    BOOL    WINAPI v_CloseHandle(HANDLE hFile);
+    BOOL    WINAPI v_ReadFile(HANDLE hFile, LPVOID pBuf, DWORD to_read,
+                              LPDWORD read, LPVOID o);
+    BOOL    WINAPI v_WriteFile(HANDLE hFile, LPCVOID pBuf, DWORD to_write,
+                               LPDWORD written, LPVOID o);
+    BOOL    WINAPI v_FlushFileBuffer(HANDLE hFile);
+    DWORD   WINAPI v_GetFileSize(HANDLE hFile, LPDWORD hi);
+    BOOL    WINAPI v_SetEndOfFile(HANDLE hFile);
+    DWORD   WINAPI v_SetFilePointer(HANDLE hFile, LONG lo, PLONG hi,
+                                    DWORD method);
+#endif  /* def _WIN32 */
+
+/* mapping */
+#ifdef WIN16
+    #define v_CreateFile v_CreateFile16
+    #define v_OpenFile v_OpenFile16
+#elif defined(_WIN32)
+    #ifdef UNICODE
+        #define v_CreateFile v_CreateFileW
+    #else
+        #define v_CreateFile v_CreateFileA
+    #endif
+    #define v_OpenFile v_OpenFile32
 #endif
 
 /**************************************************************************/

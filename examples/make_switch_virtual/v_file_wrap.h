@@ -53,6 +53,25 @@
 #undef fprintf_s
 #undef vfprintf_s
 #undef clearerr_s
+#undef HFILE
+#undef HFILE_ERROR
+#undef _lcreat
+#undef _lopen
+#undef _llseek
+#undef _lread
+#undef _lwrite
+#undef _lclose
+#undef OpenFile
+#undef CreateFile
+#undef CreateFileA
+#undef CreateFileW
+#undef CloseHandle
+#undef ReadFile
+#undef WriteFile
+#undef FlushFileBuffer
+#undef GetFileSize
+#undef SetEndOfFile
+#undef SetFilePointer
 
 /**************************************************************************/
 /* do wrap */
@@ -100,5 +119,24 @@
 #define fprintf_s v_fprintf_s
 #define vfprintf_s v_vfprintf_s
 #define clearerr_s v_clearerr_s
+#define HFILE v_HFILE
+#define HFILE_ERROR v_HFILE_ERROR
+#define _lcreat v__lcreat
+#define _lopen v__lopen
+#define _llseek v__llseek
+#define _lread v__lread
+#define _lwrite v__lwrite
+#define _lclose v__lclose
+#define OpenFile v_OpenFile
+#define CreateFile v_CreateFile
+#define CreateFileA v_CreateFileA
+#define CreateFileW v_CreateFileW
+#define CloseHandle v_CloseHandle
+#define ReadFile v_ReadFile
+#define WriteFile v_WriteFile
+#define FlushFileBuffer v_FlushFileBuffer
+#define GetFileSize v_GetFileSize
+#define SetEndOfFile v_SetEndOfFile
+#define SetFilePointer v_SetFilePointer
 
 /**************************************************************************/
