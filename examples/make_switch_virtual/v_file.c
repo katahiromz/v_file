@@ -280,8 +280,15 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
     FILE *fp;
     int ret = v_EOF;
 
-    assert(fname);
-    assert(strcmp(modes, "w") == 0 || strcmp(modes, "wb") == 0);
+    #ifndef V_FILE_NEED_SPEED
+        /* check paramters */
+        assert(v_fp);
+        if (v_fp == NULL || v_fp == v_HFILE_ERROR)
+            return ret;
+        assert(fname);
+        assert(strcmp(modes, "w") == 0 || strcmp(modes, "wb") == 0);
+    #endif
+
     fp = fopen(fname, modes);
     assert(fp);
     if (fp)
@@ -377,8 +384,15 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
         FILE *fp;
         int ret = v_EOF;
 
-        assert(fname);
-        assert(wcscmp(modes, L"w") == 0 || wcscmp(modes, L"wb") == 0);
+        #ifndef V_FILE_NEED_SPEED
+            /* check paramters */
+            assert(v_fp);
+            if (v_fp == NULL || v_fp == v_HFILE_ERROR)
+                return ret;
+            assert(fname);
+            assert(wcscmp(modes, L"w") == 0 || wcscmp(modes, L"wb") == 0);
+        #endif
+
         fp = _wfopen(fname, modes);
         assert(fp);
         if (fp)
