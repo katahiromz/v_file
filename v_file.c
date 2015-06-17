@@ -582,6 +582,7 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
             if (s_ofsOld == pofs)
             {
                 /* TODO: FIXME if you can */
+                assert(0);
                 fp = NULL;
                 CopyMemory(&fp, &pofs->Reserved1, sizeof(DWORD));
                 if (fp == NULL)
@@ -606,6 +607,7 @@ int v_fsave(v_LPCSTR fname, v_LPFILE v_fp, v_LPCSTR modes)
         if (style & OF_VERIFY)
         {
             /* TODO: FIXME if you can */
+            assert(0);
         }
 
         fp = NULL;
