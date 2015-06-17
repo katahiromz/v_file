@@ -4,7 +4,7 @@
 /**************************************************************************/
 
 #ifndef KATAHIROMZ_V_FILE_H_
-#define KATAHIROMZ_V_FILE_H_  /* version */ 3
+#define KATAHIROMZ_V_FILE_H_  /* version */ 4
 
 #ifdef __cplusplus
     #include <cstdarg>
@@ -58,8 +58,32 @@ extern "C"
 /**************************************************************************/
 /* validation */
 
+#if defined(MSDOS) && defined(_WIN32)
+    #error MSDOS and _WIN32 are mutually exclusive. You lose.
+#endif
+
+#if defined(WIN16) && defined(_WIN32)
+    #error WIN16 and _WIN32 are mutually exclusive. You lose.
+#endif
+
+#if defined(MSDOS) && defined(_WIN64)
+    #error MSDOS and _WIN64 are mutually exclusive. You lose.
+#endif
+
+#if defined(WIN16) && defined(_WIN64)
+    #error WIN16 and _WIN64 are mutually exclusive. You lose.
+#endif
+
+#if defined(MSDOS) && defined(__x86_64__)
+    #error MSDOS and __x86_64__ are mutually exclusive. You lose.
+#endif
+
+#if defined(WIN16) && defined(__x86_64__)
+    #error WIN16 and __x86_64__ are mutually exclusive. You lose.
+#endif
+
 #if defined(V_FILE_NEED_SPEED) && defined(V_FILE_WANT_SECURE_LIB)
-    #error Choose either V_FILE_NEED_SPEED or V_FILE_WANT_SECURE_LIB. You lose.
+    #error Choose either speed or security in configuration. You lose.
 #endif
 
 /**************************************************************************/
